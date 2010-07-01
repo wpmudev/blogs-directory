@@ -1,0 +1,11 @@
+Plugin Name: Blogs Directory
+Author: Andrew Billits
+
+Files:
+----------------------------------------------------------------------
+blogs-directory.php - goes in /wp-content/mu-plugins
+
+Instructions:
+----------------------------------------------------------------------
+1) Place the files in the specified directories
+2) Create a page with the slug "blogs" without the quotes if the plugin fails to auto-create the page
