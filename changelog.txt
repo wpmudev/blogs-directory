@@ -5,6 +5,15 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.0.8 - 10/16/2010
+----------------------------------------------------------------------
+- Fixed nav menu item broken with some themes and when the default
+slug is different from blog
+- Fixed bug with search and pagination
+- Fixed php errors
+- Fixed blogs directory page title remains 'Blogs' even if the user
+enter a different title in the admin
+
 1.0.7 - 12/04/2009
 ----------------------------------------------------------------------
 - Better compatibility with directory installs.
