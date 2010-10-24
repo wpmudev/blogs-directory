@@ -3,8 +3,8 @@
 Plugin Name: Blogs Directory
 Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
-Author: Andrew Billits (Incsub)
-Version: 1.0.8
+Author: Andrew Billits, Ulrich Sossou (Incsub)
+Version: 1.0.9
 Author URI:
 */
 
