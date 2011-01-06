@@ -33,23 +33,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 $blogs_directory_base = 'blogs'; //domain.tld/BASE/ Ex: domain.tld/user/
 
-///* Get admin page location */
-//if ( is_multisite() ) {
-//    if ( version_compare( $wp_version, '3.0.9', '>' ) ) {
-//        $blogs_directory_menu_slug = 'settings.php';
-//        $blogs_directory_admin_url = admin_url('network/settings.php?page=manage-tips');
-//        add_action('network_admin_menu', 'tips_plug_pages');
-//    } else {
-//        $blogs_directory_menu_slug = 'ms-admin.php';
-//        $blogs_directory_admin_url = admin_url('ms-admin.php?page=manage-tips');
-//        add_action('admin_menu', 'tips_plug_pages');
-//    }
-//} else {
-//    $tips_menu_slug = 'options-general.php';
-//    $tips_admin_url = admin_url('options-general.php?page=manage-tips');
-//    add_action('admin_menu', 'tips_plug_pages');
-//}
-
 //------------------------------------------------------------------------//
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
