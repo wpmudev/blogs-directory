@@ -3,9 +3,11 @@
 Plugin Name: Blogs Directory
 Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
-Author: Andrew Billits, Ulrich Sossou (Incsub)
-Version: 1.0.9
-Author URI:
+Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits (Incsub)
+Author URI: http://ivan.sh
+Version: 1.1.0
+Network: true
+WDP ID: 101
 */
 
 /*
@@ -31,14 +33,30 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 $blogs_directory_base = 'blogs'; //domain.tld/BASE/ Ex: domain.tld/user/
 
+///* Get admin page location */
+//if ( is_multisite() ) {
+//    if ( version_compare( $wp_version, '3.0.9', '>' ) ) {
+//        $blogs_directory_menu_slug = 'settings.php';
+//        $blogs_directory_admin_url = admin_url('network/settings.php?page=manage-tips');
+//        add_action('network_admin_menu', 'tips_plug_pages');
+//    } else {
+//        $blogs_directory_menu_slug = 'ms-admin.php';
+//        $blogs_directory_admin_url = admin_url('ms-admin.php?page=manage-tips');
+//        add_action('admin_menu', 'tips_plug_pages');
+//    }
+//} else {
+//    $tips_menu_slug = 'options-general.php';
+//    $tips_admin_url = admin_url('options-general.php?page=manage-tips');
+//    add_action('admin_menu', 'tips_plug_pages');
+//}
+
 //------------------------------------------------------------------------//
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
 
-if ($current_blog->domain . $current_blog->path == $current_site->domain . $current_site->path){
+if ( $current_blog->domain . $current_blog->path == $current_site->domain . $current_site->path ){
 	add_filter('generate_rewrite_rules','blogs_directory_rewrite');
-	$blogs_directory_wp_rewrite = new WP_Rewrite;
-	$blogs_directory_wp_rewrite->flush_rules();
+    //add_action('init','blogs_directory_flush_rewrite_rules');
 	add_filter('the_content', 'blogs_directory_output', 20);
 	add_filter('the_title', 'blogs_directory_title_output', 99, 2);
 	add_action('admin_footer', 'blogs_directory_page_setup');
@@ -51,9 +69,14 @@ add_action('update_wpmu_options', 'blogs_directory_site_admin_options_process');
 //---Functions------------------------------------------------------------//
 //------------------------------------------------------------------------//
 
+function blogs_directory_flush_rewrite_rules() {
+    $blogs_directory_wp_rewrite = new WP_Rewrite;
+	$blogs_directory_wp_rewrite->flush_rules();
+}
+
 function blogs_directory_page_setup() {
 	global $wpdb, $user_ID, $blogs_directory_base;
-	if ( get_site_option('blogs_directory_page_setup') != 'complete' && is_site_admin() ) {
+	if ( get_site_option('blogs_directory_page_setup') != 'complete' && is_super_admin() ) {
 		$page_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->posts . " WHERE post_name = '" . $blogs_directory_base . "' AND post_type = 'page'");
 		if ( $page_count < 1 ) {
 			$wpdb->query( "INSERT INTO " . $wpdb->posts . " ( post_author, post_date, post_date_gmt, post_content, post_title, post_excerpt, post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, menu_order, post_type, post_mime_type, comment_count ) VALUES ( '" . $user_ID . "', '" . current_time( 'mysql' ) . "', '" . current_time( 'mysql' ) . "', '', '" . __('Blogs') . "', '', 'publish', 'closed', 'closed', '', '" . $blogs_directory_base . "', '', '', '" . current_time( 'mysql' ) . "', '" . current_time( 'mysql' ) . "', '', 0, '', 0, 'page', '', 0 )" );
@@ -118,7 +141,6 @@ function blogs_directory_site_admin_options() {
 }
 
 function blogs_directory_site_admin_options_process() {
-
 	update_site_option( 'blogs_directory_sort_by' , $_POST['blogs_directory_sort_by']);
 	update_site_option( 'blogs_directory_per_page' , $_POST['blogs_directory_per_page']);
 	update_site_option( 'blogs_directory_background_color' , trim( $_POST['blogs_directory_background_color'] ));
@@ -533,5 +555,15 @@ function blogs_directory_landing_navigation_output($content, $per_page, $page){
 function blogs_directory_roundup($value, $dp){
     return ceil($value*pow(10, $dp))/pow(10, $dp);
 }
+
+/* Update Notifications Notice */
+if ( !function_exists( 'wdp_un_check' ) ):
+function wdp_un_check() {
+    if ( !class_exists('WPMUDEV_Update_Notifications') && current_user_can('edit_users') )
+        echo '<div class="error fade"><p>' . __('Please install the latest version of <a href="http://premium.wpmudev.org/project/update-notifications/" title="Download Now &raquo;">our free Update Notifications plugin</a> which helps you stay up-to-date with the most stable, secure versions of WPMU DEV themes and plugins. <a href="http://premium.wpmudev.org/wpmu-dev/update-notifications-plugin-information/">More information &raquo;</a>', 'wpmudev') . '</a></p></div>';
+}
+add_action( 'admin_notices', 'wdp_un_check', 5 );
+add_action( 'network_admin_notices', 'wdp_un_check', 5 );
+endif;
 
 ?>
