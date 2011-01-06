@@ -1,47 +1,41 @@
-Plugin Name: Blogs Directory
-Author: Andrew Billits
+=== Blogs Directory ===
+Authors: Ivan Shaovchev, Ulrich Sossou, Andrew Billits (Incsub)
 
-Change Log:
-----------------------------------------------------------------------
-----------------------------------------------------------------------
+== Changelog ==
 
-1.0.8 - 10/16/2010
-----------------------------------------------------------------------
-- Fixed nav menu item broken with some themes and when the default
-slug is different from blog
-- Fixed bug with search and pagination
-- Fixed php errors
-- Fixed blogs directory page title remains 'Blogs' even if the user
-enter a different title in the admin
+= 1.1.0 =
+* Compatibility update for WordPress 3.1
+* Bug fixes.
 
-1.0.7 - 12/04/2009
-----------------------------------------------------------------------
-- Better compatibility with directory installs.
+= 1.0.9 =
+* Bug fixes.
 
-1.0.6 - 12/03/2009
-----------------------------------------------------------------------
-- Better compatibility with directory installs.
+= 1.0.8 =
+* Fixed nav menu item broken with some themes and when the default slug is different from blog
+* Fixed bug with search and pagination
+* Fixed php errors
+* Fixed blogs directory page title remains 'Blogs' even if the user enter a different title in the admin
 
-1.0.5 - 11/18/2009
-----------------------------------------------------------------------
-- Better compatibility with sites installed into a directory.
+= 1.0.7 =
+*  Better compatibility with directory installs.
 
-1.0.4 - 11/12/2009
-----------------------------------------------------------------------
-- Fixed "invalid page" issue
+= 1.0.6 =
+* Better compatibility with directory installs.
 
-1.0.3 - 11/06/2009
-----------------------------------------------------------------------
-- Fixed search page
+= 1.0.5 =
+* Better compatibility with sites installed into a directory.
 
-1.0.2 - 10/23/2009
-----------------------------------------------------------------------
-- Now functions if the premium avatars plugin is not installed
+= 1.0.4 =
+* Fixed "invalid page" issue
 
-1.0.1 - 09/28/2009
-----------------------------------------------------------------------
-- Now compatible with sites installed in a directory.
+= 1.0.3 =
+* Fixed search page
 
-1.0.0 - 08/10/2009
-----------------------------------------------------------------------
-- Initial Release.
+= 1.0.2 =
+* Now functions if the premium avatars plugin is not installed
+
+= 1.0.1 =
+* Now compatible with sites installed in a directory.
+
+= 1.0.0 =
+* Initial Release
