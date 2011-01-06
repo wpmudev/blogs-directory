@@ -5,6 +5,7 @@ Authors: Ivan Shaovchev, Ulrich Sossou, Andrew Billits (Incsub)
 
 = 1.1.0 =
 * Compatibility update for WordPress 3.1
+* Update Notifications script added
 * Bug fixes.
 
 = 1.0.9 =
