@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
 Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits (Incsub)
 Author URI: http://ivan.sh
-Version: 1.1.1
+Version: 1.1.2
 Network: true
 WDP ID: 101
 */
@@ -265,7 +265,7 @@ function blogs_directory_output($content) {
 
 				$query = "SELECT * FROM " . $wpdb->base_prefix . "blogs WHERE spam != 1 AND deleted != 1 AND blog_id != 1";
 				if ( $blogs_directory_sort_by == 'alphabetically' ) {
-					if (VHOST == 'yes') {
+					if ( is_subdomain_install() ) {
 						$query .= " ORDER BY domain ASC";
 					} else {
 						$query .= " ORDER BY path ASC";
@@ -277,6 +277,7 @@ function blogs_directory_output($content) {
 				}
 				$query .= " LIMIT " . intval( $start ) . ", " . intval( $blogs_directory_per_page );
 				$blogs = $wpdb->get_results( $query, ARRAY_A );
+				$blogs = apply_filters( 'blogs_directory_blogs_list', $blogs );
 				if ( count($blogs) > 0 ) {
 					//=================================//
 					foreach ($blogs as $blog){
@@ -318,7 +319,7 @@ function blogs_directory_output($content) {
 				$math = $blogs_directory_per_page * $math;
 				$start = $math;
 			}
-			if (VHOST == 'yes') {
+			if ( is_subdomain_install() ) {
 				$query = "SELECT * FROM " . $wpdb->base_prefix . "blogs WHERE ( domain LIKE '%" . $blogs_directory['phrase'] . "%' ) AND spam != 1 AND deleted != 1 AND blog_id != 1";
 			} else {
 				$query = "SELECT * FROM " . $wpdb->base_prefix . "blogs WHERE ( path LIKE '%" . $blogs_directory['phrase'] . "%' ) AND spam != 1 AND deleted != 1 AND blog_id != 1";
@@ -420,12 +421,12 @@ function blogs_directory_search_form_output($content, $phrase) {
 
 function blogs_directory_search_navigation_output($content, $per_page, $page, $phrase, $next){
 	global $wpdb, $current_site, $blogs_directory_base;
-	if (VHOST == 'yes') {
+	if ( is_subdomain_install() ) {
 		$blog_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "blogs WHERE ( domain LIKE '%" . $phrase . "%' ) AND spam != 1 AND deleted != 1 AND blog_id != 1");
 	} else {
 		$blog_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "blogs WHERE ( path LIKE '%" . $phrase . "%' ) AND spam != 1 AND deleted != 1 AND blog_id != 1");
 	}
-	$blog_count = $blog_count - 1;
+	$blog_count = apply_filters( 'blogs_directory_blogs_count', $blog_count - 1 );
 
 	//generate page div
 	//============================================================================//
@@ -434,8 +435,6 @@ function blogs_directory_search_navigation_output($content, $per_page, $page, $p
 	$content .= '<tr>';
 	$showing_low = ($page * $per_page) - ($per_page - 1);
 	if ($total_pages == $page){
-		//last page...
-		//$showing_high = $blog_count - (($total_pages - 1) * $per_page);
 		$showing_high = $blog_count;
 	} else {
 		$showing_high = $page * $per_page;
@@ -479,6 +478,7 @@ function blogs_directory_search_navigation_output($content, $per_page, $page, $p
 function blogs_directory_landing_navigation_output($content, $per_page, $page){
 	global $wpdb, $current_site, $blogs_directory_base;
 	$blog_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "blogs WHERE spam != 1 AND deleted != 1 AND blog_id != 1");
+	$blog_count = apply_filters( 'blogs_directory_blogs_count', $blog_count );
 
 	//generate page div
 	//============================================================================//

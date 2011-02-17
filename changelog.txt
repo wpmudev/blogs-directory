@@ -3,6 +3,9 @@ Authors: Ivan Shaovchev, Ulrich Sossou, Andrew Billits (Incsub)
 
 == Changelog ==
 
+= 1.1.2 =
+* Add filter to blogs list and count.
+
 = 1.1.1 =
 * Remove unnecessary code.
 
