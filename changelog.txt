@@ -3,6 +3,9 @@ Authors: Ivan Shaovchev, Ulrich Sossou, Andrew Billits (Incsub)
 
 == Changelog ==
 
+= 1.1.3 =
+* Fix rewrite rules.
+
 = 1.1.2 =
 * Add filter to blogs list and count.
 
