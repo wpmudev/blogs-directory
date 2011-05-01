@@ -11,7 +11,7 @@ WDP ID: 101
 */
 
 /*
-Copyright 2007-2009 Incsub (http://incsub.com)
+Copyright 2007-2011 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License (Version 2 - GPLv2) as published by
@@ -37,9 +37,10 @@ $blogs_directory_base = 'blogs'; //domain.tld/BASE/ Ex: domain.tld/user/
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
 
+register_activation_hook( __FILE__, 'flush_rewrite_rules' );
+
 if ( $current_blog->domain . $current_blog->path == $current_site->domain . $current_site->path ){
 	add_filter('generate_rewrite_rules','blogs_directory_rewrite');
-    //add_action('init','blogs_directory_flush_rewrite_rules');
 	add_filter('the_content', 'blogs_directory_output', 20);
 	add_filter('the_title', 'blogs_directory_title_output', 99, 2);
 	add_action('admin_footer', 'blogs_directory_page_setup');
@@ -51,11 +52,6 @@ add_action('update_wpmu_options', 'blogs_directory_site_admin_options_process');
 //------------------------------------------------------------------------//
 //---Functions------------------------------------------------------------//
 //------------------------------------------------------------------------//
-
-function blogs_directory_flush_rewrite_rules() {
-    $blogs_directory_wp_rewrite = new WP_Rewrite;
-	$blogs_directory_wp_rewrite->flush_rules();
-}
 
 function blogs_directory_page_setup() {
 	global $wpdb, $user_ID, $blogs_directory_base;
