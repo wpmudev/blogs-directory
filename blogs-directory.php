@@ -3,9 +3,9 @@
 Plugin Name: Blogs Directory
 Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
-Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits (Incsub)
-Author URI: http://ivan.sh
-Version: 1.1.3
+Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub)
+Author URI: http://premium.wpmudev.org
+Version: 1.1.4
 Network: true
 WDP ID: 101
 */
@@ -37,13 +37,12 @@ $blogs_directory_base = 'blogs'; //domain.tld/BASE/ Ex: domain.tld/user/
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
 
-register_activation_hook( __FILE__, 'flush_rewrite_rules' );
-
 if ( $current_blog->domain . $current_blog->path == $current_site->domain . $current_site->path ){
-	add_filter('generate_rewrite_rules','blogs_directory_rewrite');
+	add_filter('rewrite_rules_array','blogs_directory_rewrite');
 	add_filter('the_content', 'blogs_directory_output', 20);
 	add_filter('the_title', 'blogs_directory_title_output', 99, 2);
-	add_action('admin_footer', 'blogs_directory_page_setup');
+    add_action('admin_footer', 'blogs_directory_page_setup');
+	add_action('init', 'blogs_directory_flush_rewrite_rules');
 }
 
 add_action('wpmu_options', 'blogs_directory_site_admin_options');
@@ -52,6 +51,15 @@ add_action('update_wpmu_options', 'blogs_directory_site_admin_options_process');
 //------------------------------------------------------------------------//
 //---Functions------------------------------------------------------------//
 //------------------------------------------------------------------------//
+
+//update rewrite rules
+function blogs_directory_flush_rewrite_rules() {
+    global $blogs_directory_base;
+    $rules = get_option( 'rewrite_rules' );
+    if ( !isset( $rules[$blogs_directory_base . '/([^/]+)/([^/]+)/([^/]+)/([^/]+)/?$'] ) ) {
+        flush_rewrite_rules( false );
+    }
+}
 
 function blogs_directory_page_setup() {
 	global $wpdb, $user_ID, $blogs_directory_base;
@@ -130,12 +138,12 @@ function blogs_directory_site_admin_options_process() {
 function blogs_directory_rewrite($wp_rewrite){
 	global $blogs_directory_base;
     $blogs_directory_rules = array(
-        $blogs_directory_base . '/([^/]+)/([^/]+)/([^/]+)/([^/]+)/?$' => 'index.php?pagename=' . $blogs_directory_base,
-        $blogs_directory_base . '/([^/]+)/([^/]+)/([^/]+)/?$' => 'index.php?pagename=' . $blogs_directory_base,
-        $blogs_directory_base . '/([^/]+)/([^/]+)/?$' => 'index.php?pagename=' . $blogs_directory_base,
-        $blogs_directory_base . '/([^/]+)/?$' => 'index.php?pagename=' . $blogs_directory_base
+        $blogs_directory_base . '/([^/]+)/([^/]+)/([^/]+)/([^/]+)/?$'   => 'index.php?pagename=' . $blogs_directory_base,
+        $blogs_directory_base . '/([^/]+)/([^/]+)/([^/]+)/?$'           => 'index.php?pagename=' . $blogs_directory_base,
+        $blogs_directory_base . '/([^/]+)/([^/]+)/?$'                   => 'index.php?pagename=' . $blogs_directory_base,
+        $blogs_directory_base . '/([^/]+)/?$'                           => 'index.php?pagename=' . $blogs_directory_base
     );
-    $wp_rewrite->rules = $blogs_directory_rules + $wp_rewrite->rules;
+    $wp_rewrite = $blogs_directory_rules + $wp_rewrite;
 	return $wp_rewrite;
 }
 
@@ -315,15 +323,79 @@ function blogs_directory_output($content) {
 				$math = $blogs_directory_per_page * $math;
 				$start = $math;
 			}
-			if ( is_subdomain_install() ) {
-				$query = "SELECT * FROM " . $wpdb->base_prefix . "blogs WHERE ( domain LIKE '%" . $blogs_directory['phrase'] . "%' ) AND spam != 1 AND deleted != 1 AND blog_id != 1";
-			} else {
-				$query = "SELECT * FROM " . $wpdb->base_prefix . "blogs WHERE ( path LIKE '%" . $blogs_directory['phrase'] . "%' ) AND spam != 1 AND deleted != 1 AND blog_id != 1";
-			}
-			$query .= " LIMIT " . intval( $start ) . ", " . intval( $blogs_directory_per_page );
-			if ( !empty( $blogs_directory['phrase'] ) ) {
-				$blogs = $wpdb->get_results( $query, ARRAY_A );
-			}
+
+
+            //get all blogs
+            $query      = "SELECT * FROM " . $wpdb->base_prefix . "blogs";
+            $temp_blogs = $wpdb->get_results( $query, ARRAY_A );
+
+            //search by
+            if ( !empty( $temp_blogs ) ) {
+                foreach ( $temp_blogs as $blog ) {
+                    if ( $current_site->id != $blog['blog_id'] ) {
+                        $blogname           = get_blog_option( $blog['blog_id'], 'blogname', $blog['domain'] . $blog['path'] );
+                        $blogdescription    = get_blog_option( $blog['blog_id'], 'blogdescription', $blog['domain'] . $blog['path'] );
+                        $percent            = 0;
+
+                        similar_text( strtolower( $blogname ), strtolower( $blogs_directory['phrase'] ), $percent );
+                        if ( 100 == $percent ) {
+                            //if found 100 percent result stop searching
+                            $blog['blogname']           = $blogname;
+                            $blog['blogdescription']    = $blogdescription;
+                            $blog['percent']            = $percent;
+                            $blogs                      = $blog;
+                            break;
+                        } elseif ( 80 <= $percent ) {
+                            //add blog in possible results array
+                            $blog['blogname']           = $blogname;
+                            $blog['blogdescription']    = $blogdescription;
+                            $blog['percent']            = $percent;
+                            $blogs[]                    = $blog;
+                        } else {
+                            //if anything in blogname try search in blogdescription
+                            $search_arr = explode( ' ', strtolower( trim( preg_replace( "/  +/", " ", preg_replace( "/[^\w\d\s]/", "", $blogs_directory['phrase'] ) ) ) ) );
+
+                            if ( is_array( $search_arr ) ) {
+                                $find = 0;
+                                $temp_blogdescription = $blogdescription;
+
+                                foreach ( $search_arr as $search_text ) {
+                                    $count = substr_count( strtolower( $blogdescription ), $search_text );
+                                    if ( 0 < $count ) {
+                                        //set SHORTCODE for highlight search words
+                                        $temp_blogdescription = preg_replace( "/(.*?)(" . $search_text . ")(.*?)/i", "\\1{MYSHORTCODE_OPEN}\\2{MYSHORTCODE_CLOSE}\\3", $temp_blogdescription );
+                                        //count found words
+                                        $find++;
+                                    }
+                                }
+
+                                if ( 0 < $find ) {
+                                    //replace SHORTCODE for highlight search words
+                                    $temp_blogdescription = str_replace( '{MYSHORTCODE_OPEN}', '<span style="background-color: yellow;">', $temp_blogdescription );
+                                    $temp_blogdescription = str_replace( '{MYSHORTCODE_CLOSE}', '</span>', $temp_blogdescription );
+
+                                    $blog['blogname']           = $blogname;
+                                    $blog['blogdescription']    = $temp_blogdescription;
+                                    $blog['percent']            = $find;
+                                    $blogs[]                    = $blog;
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+                //sorb blogs by percent
+                if ( 1 < count( $blogs ) ) {
+                    $fn = create_function( '$a, $b', '
+                        if( $a["percent"] == $b["percent"] ) return 0;
+                        return ( $a["percent"] > $b["percent"] ) ? -1 : 1;
+                    ');
+
+                    usort( $blogs, $fn );
+                }
+            }
+
 			//=====================================//
 			$search_form_content = blogs_directory_search_form_output('', $blogs_directory['phrase']);
 			if ( !empty( $blogs ) ) {
@@ -352,7 +424,6 @@ function blogs_directory_output($content) {
 				if ( !empty( $blogs ) ) {
 					foreach ($blogs as $blog){
 						//=============================//
-						$blog_title = get_blog_option( $blog['blog_id'], 'blogname', $blog['domain'] . $blog['path'] );
 						if ($tic_toc == 'toc'){
 							$tic_toc = 'tic';
 						} else {
@@ -371,7 +442,8 @@ function blogs_directory_output($content) {
 								$content .= '<td style="background-color:' . $bg_color . '; padding-top:10px;" valign="top" width="10%"></td>';
 							}
 							$content .= '<td style="background-color:' . $bg_color . ';" width="90%">';
-							$content .= '<a style="text-decoration:none; font-size:1.5em; margin-left:20px;" href="http://' . $blog['domain'] . $blog['path'] . '">' . $blog_title . '</a><br />';
+                            $content .= '<a style="text-decoration:none; font-size:1.5em; margin-left:20px;" href="http://' . $blog['domain'] . $blog['path'] . '">' . $blog['blogname'] . '</a><br />';
+							$content .= '<span class="blogs_dir_search_blog_description" style="font-size: 12px; color: #9D88B0" >' . $blog['blogdescription'] . '</span>';
 							$content .= '</td>';
 						$content .= '</tr>';
 					}
