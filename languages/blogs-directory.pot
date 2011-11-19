@@ -1,0 +1,116 @@
+# LANGUAGE (LOCALE) translation for WordPress.
+# Copyright (C) YEAR WordPress contributors.
+# This file is distributed under the same license as the WordPress package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: WordPress VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-11-19 18:59+0200\n"
+"PO-Revision-Date: 2011-11-19 18:59+0200\n"
+"Last-Translator: Andrey Shipilov\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: _e;__\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: c:\\blogs-directory\n"
+
+#: c:\blogs-directory/blogs-directory.php:95
+#: c:\blogs-directory/blogs-directory.php:296
+#: c:\blogs-directory/blogs-directory.php:470
+msgid "Blogs"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:109
+msgid "Blogs Directory"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:112
+msgid "Sort By"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:115
+msgid "Blog Name (A-Z)"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:116
+msgid "Newest"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:117
+msgid "Last Updated"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:122
+msgid "Listing Per Page"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:139
+msgid "Hide Blogs"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:142
+msgid "Pro Site plugin"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:143
+msgid "(Hide unpaid blogs.)"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:146
+msgid "Private"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:147
+msgid "(Hide blogs which block search engines.)"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:151
+msgid "Background Color"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:153
+#: c:\blogs-directory/blogs-directory.php:158
+#: c:\blogs-directory/blogs-directory.php:163
+msgid "Default"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:156
+msgid "Alternate Background Color"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:161
+msgid "Border Color"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:267
+#: c:\blogs-directory/blogs-directory.php:269
+#: c:\blogs-directory/blogs-directory.php:534
+msgid "Search"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:505
+msgid "No results..."
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:515
+msgid "Invalid page."
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:570
+#: c:\blogs-directory/blogs-directory.php:624
+msgid "Previous"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:586
+#: c:\blogs-directory/blogs-directory.php:639
+msgid "Next"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:666
+msgid "Please install the latest version of <a href=\"http://premium.wpmudev.org/project/update-notifications/\" title=\"Download Now &raquo;\">our free Update Notifications plugin</a> which helps you stay up-to-date with the most stable, secure versions of WPMU DEV themes and plugins. <a href=\"http://premium.wpmudev.org/wpmu-dev/update-notifications-plugin-information/\">More information &raquo;</a>"
+msgstr ""
+

@@ -3,6 +3,11 @@ Authors: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub)
 
 == Changelog ==
 
+= 1.1.5 =
+* Fixed search by Title;
+* Added new feature for hide some blogs (Pro-site, Private);
+* Added feature for translate the plugin;
+
 = 1.1.4 =
 * Fix problem with update rewrite rules;
 * Changed search of blogs (by Title and Description);

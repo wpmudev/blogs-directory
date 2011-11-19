@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
 Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.1.4
+Version: 1.1.5
 Network: true
 WDP ID: 101
 */
@@ -33,6 +33,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 $blogs_directory_base = 'blogs'; //domain.tld/BASE/ Ex: domain.tld/user/
 
+load_plugin_textdomain( 'blogs-directory', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+
 //------------------------------------------------------------------------//
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -51,6 +53,29 @@ add_action('update_wpmu_options', 'blogs_directory_site_admin_options_process');
 //------------------------------------------------------------------------//
 //---Functions------------------------------------------------------------//
 //------------------------------------------------------------------------//
+
+//hide some blogs from result
+function blogs_directory_hide_some_blogs( $blog_id ) {
+    $blogs_directory_hide_blogs = get_site_option( 'blogs_directory_hide_blogs');
+
+    /*Hide Pro Site blogs */
+    if ( isset( $blogs_directory_hide_blogs['pro_site'] ) && 1 == $blogs_directory_hide_blogs['pro_site'] ) {
+        global $ProSites_Module_PayToBlog, $psts;
+        //don't show unpaid blogs
+        if ( is_object( $ProSites_Module_PayToBlog ) && $psts->get_setting( 'ptb_front_disable' ) && !is_pro_site( $blog_id, 1 ) )
+            return true;
+    }
+
+    /*Hide Private blogs */
+    if ( isset( $blogs_directory_hide_blogs['private'] ) && 1 == $blogs_directory_hide_blogs['private'] ) {
+        //don't show private blogs
+        $privacy = get_blog_option( $blog_id, 'blog_public' );
+        if ( is_numeric( $privacy ) && 0 == $privacy )
+            return true;
+    }
+
+    return false;
+}
 
 //update rewrite rules
 function blogs_directory_flush_rewrite_rules() {
@@ -73,55 +98,68 @@ function blogs_directory_page_setup() {
 }
 
 function blogs_directory_site_admin_options() {
-	$blogs_directory_sort_by = get_site_option('blogs_directory_sort_by', 'alphabetically');
-	$blogs_directory_per_page = get_site_option('blogs_directory_per_page', '10');
-	$blogs_directory_background_color = get_site_option('blogs_directory_background_color', '#F2F2EA');
+	$blogs_directory_sort_by                    = get_site_option('blogs_directory_sort_by', 'alphabetically');
+	$blogs_directory_per_page                   = get_site_option('blogs_directory_per_page', '10');
+	$blogs_directory_background_color           = get_site_option('blogs_directory_background_color', '#F2F2EA');
 	$blogs_directory_alternate_background_color = get_site_option('blogs_directory_alternate_background_color', '#FFFFFF');
-	$blogs_directory_border_color = get_site_option('blogs_directory_border_color', '#CFD0CB');
+    $blogs_directory_border_color               = get_site_option('blogs_directory_border_color', '#CFD0CB');
+	$blogs_directory_hide_blogs                 = get_site_option('blogs_directory_hide_blogs');
 	?>
-		<h3><?php _e('Blogs Directory') ?></h3>
+		<h3><?php _e('Blogs Directory','blogs-directory') ?></h3>
 		<table class="form-table">
             <tr valign="top">
-                <th width="33%" scope="row"><?php _e('Sort By') ?></th>
+                <th width="33%" scope="row"><?php _e('Sort By','blogs-directory') ?></th>
                 <td>
                     <select name="blogs_directory_sort_by" id="blogs_directory_sort_by">
-                       <option value="alphabetically" <?php if ( $blogs_directory_sort_by == 'alphabetically' ) { echo 'selected="selected"'; } ?> ><?php _e('Blog Name (A-Z)'); ?></option>
-                       <option value="latest" <?php if ( $blogs_directory_sort_by == 'latest' ) { echo 'selected="selected"'; } ?> ><?php _e('Newest'); ?></option>
-                       <option value="last_updated" <?php if ( $blogs_directory_sort_by == 'last_updated' ) { echo 'selected="selected"'; } ?> ><?php _e('Last Updated'); ?></option>
+                       <option value="alphabetically" <?php if ( $blogs_directory_sort_by == 'alphabetically' ) { echo 'selected="selected"'; } ?> ><?php _e('Blog Name (A-Z)','blogs-directory'); ?></option>
+                       <option value="latest" <?php if ( $blogs_directory_sort_by == 'latest' ) { echo 'selected="selected"'; } ?> ><?php _e('Newest','blogs-directory'); ?></option>
+                       <option value="last_updated" <?php if ( $blogs_directory_sort_by == 'last_updated' ) { echo 'selected="selected"'; } ?> ><?php _e('Last Updated','blogs-directory'); ?></option>
                     </select>
-                <br /><?php //_e('') ?></td>
+                <br /></td>
             </tr>
             <tr valign="top">
-                <th width="33%" scope="row"><?php _e('Listing Per Page') ?></th>
+                <th width="33%" scope="row"><?php _e('Listing Per Page','blogs-directory') ?></th>
                 <td>
-				<select name="blogs_directory_per_page" id="blogs_directory_per_page">
-				   <option value="5" <?php if ( $blogs_directory_per_page == '5' ) { echo 'selected="selected"'; } ?> ><?php _e('5'); ?></option>
-				   <option value="10" <?php if ( $blogs_directory_per_page == '10' ) { echo 'selected="selected"'; } ?> ><?php _e('10'); ?></option>
-				   <option value="15" <?php if ( $blogs_directory_per_page == '15' ) { echo 'selected="selected"'; } ?> ><?php _e('15'); ?></option>
-				   <option value="20" <?php if ( $blogs_directory_per_page == '20' ) { echo 'selected="selected"'; } ?> ><?php _e('20'); ?></option>
-				   <option value="25" <?php if ( $blogs_directory_per_page == '25' ) { echo 'selected="selected"'; } ?> ><?php _e('25'); ?></option>
-				   <option value="30" <?php if ( $blogs_directory_per_page == '30' ) { echo 'selected="selected"'; } ?> ><?php _e('30'); ?></option>
-				   <option value="35" <?php if ( $blogs_directory_per_page == '35' ) { echo 'selected="selected"'; } ?> ><?php _e('35'); ?></option>
-				   <option value="40" <?php if ( $blogs_directory_per_page == '40' ) { echo 'selected="selected"'; } ?> ><?php _e('40'); ?></option>
-				   <option value="45" <?php if ( $blogs_directory_per_page == '45' ) { echo 'selected="selected"'; } ?> ><?php _e('45'); ?></option>
-				   <option value="50" <?php if ( $blogs_directory_per_page == '50' ) { echo 'selected="selected"'; } ?> ><?php _e('50'); ?></option>
-				</select>
-                <br /><?php //_e('') ?></td>
+                <select name="blogs_directory_per_page" id="blogs_directory_per_page">
+                   <option value="5" <?php if ( $blogs_directory_per_page == '5' ) { echo 'selected="selected"'; } ?> ><?php echo '5'; ?></option>
+                   <option value="10" <?php if ( $blogs_directory_per_page == '10' ) { echo 'selected="selected"'; } ?> ><?php echo '10'; ?></option>
+                   <option value="15" <?php if ( $blogs_directory_per_page == '15' ) { echo 'selected="selected"'; } ?> ><?php echo '15'; ?></option>
+                   <option value="20" <?php if ( $blogs_directory_per_page == '20' ) { echo 'selected="selected"'; } ?> ><?php echo '20'; ?></option>
+                   <option value="25" <?php if ( $blogs_directory_per_page == '25' ) { echo 'selected="selected"'; } ?> ><?php echo '25'; ?></option>
+                   <option value="30" <?php if ( $blogs_directory_per_page == '30' ) { echo 'selected="selected"'; } ?> ><?php echo '30'; ?></option>
+                   <option value="35" <?php if ( $blogs_directory_per_page == '35' ) { echo 'selected="selected"'; } ?> ><?php echo '35'; ?></option>
+                   <option value="40" <?php if ( $blogs_directory_per_page == '40' ) { echo 'selected="selected"'; } ?> ><?php echo '40'; ?></option>
+                   <option value="45" <?php if ( $blogs_directory_per_page == '45' ) { echo 'selected="selected"'; } ?> ><?php echo '45'; ?></option>
+                   <option value="50" <?php if ( $blogs_directory_per_page == '50' ) { echo 'selected="selected"'; } ?> ><?php echo '50'; ?></option>
+                </select>
+                <br /></td>
             </tr>
             <tr valign="top">
-                <th width="33%" scope="row"><?php _e('Background Color') ?></th>
+                <th width="33%" scope="row"><?php _e('Hide Blogs','blogs-directory') ?></th>
+                <td>
+                    <input name="blogs_directory_hide_blogs[pro_site]" id="blogs_directory_hide_blogs[pro_site]" type="checkbox" value="1" <?php echo ( isset( $blogs_directory_hide_blogs['pro_site'] ) && '1' == $blogs_directory_hide_blogs['pro_site'] ) ? 'checked' : '' ; ?>  />
+                    <label for="blogs_directory_hide_blogs[pro_site]"><?php _e('Pro Site plugin','blogs-directory') ?></label><br />
+                    <span class="description"><?php _e('(Hide unpaid blogs.)','blogs-directory') ?></span><br />
+
+                    <input name="blogs_directory_hide_blogs[private]" id="blogs_directory_hide_blogs[private]" type="checkbox" value="1" <?php echo ( isset( $blogs_directory_hide_blogs['private'] ) && '1' == $blogs_directory_hide_blogs['private'] ) ? 'checked' : '' ; ?>  />
+                    <label for="blogs_directory_hide_blogs[private]"><?php _e('Private','blogs-directory') ?></label><br />
+                    <span class="description"><?php _e('(Hide blogs which block search engines.)','blogs-directory') ?></span><br />
+                </td>
+            </tr>
+            <tr valign="top">
+                <th width="33%" scope="row"><?php _e('Background Color','blogs-directory') ?></th>
                 <td><input name="blogs_directory_background_color" type="text" id="blogs_directory_background_color" value="<?php echo $blogs_directory_background_color; ?>" size="20" />
-                <br /><?php _e('Default') ?>: #F2F2EA</td>
+                <br /><?php _e('Default','blogs-directory') ?>: #F2F2EA</td>
             </tr>
             <tr valign="top">
-                <th width="33%" scope="row"><?php _e('Alternate Background Color') ?></th>
+                <th width="33%" scope="row"><?php _e('Alternate Background Color','blogs-directory') ?></th>
                 <td><input name="blogs_directory_alternate_background_color" type="text" id="blogs_directory_alternate_background_color" value="<?php echo $blogs_directory_alternate_background_color; ?>" size="20" />
-                <br /><?php _e('Default') ?>: #FFFFFF</td>
+                <br /><?php _e('Default','blogs-directory') ?>: #FFFFFF</td>
             </tr>
             <tr valign="top">
-                <th width="33%" scope="row"><?php _e('Border Color') ?></th>
+                <th width="33%" scope="row"><?php _e('Border Color','blogs-directory') ?></th>
                 <td><input name="blogs_directory_border_color" type="text" id="blogs_directory_border_color" value="<?php echo $blogs_directory_border_color; ?>" size="20" />
-                <br /><?php _e('Default') ?>: #CFD0CB</td>
+                <br /><?php _e('Default','blogs-directory') ?>: #CFD0CB</td>
             </tr>
 		</table>
 	<?php
@@ -132,7 +170,8 @@ function blogs_directory_site_admin_options_process() {
 	update_site_option( 'blogs_directory_per_page' , $_POST['blogs_directory_per_page']);
 	update_site_option( 'blogs_directory_background_color' , trim( $_POST['blogs_directory_background_color'] ));
 	update_site_option( 'blogs_directory_alternate_background_color' , trim( $_POST['blogs_directory_alternate_background_color'] ));
-	update_site_option( 'blogs_directory_border_color' , trim( $_POST['blogs_directory_border_color'] ));
+    update_site_option( 'blogs_directory_border_color' , trim( $_POST['blogs_directory_border_color'] ));
+	update_site_option( 'blogs_directory_hide_blogs' , $_POST['blogs_directory_hide_blogs'] );
 }
 
 function blogs_directory_rewrite($wp_rewrite){
@@ -224,9 +263,9 @@ function blogs_directory_title_output($title, $post_ID = '') {
 			}
 		} else if ( $blogs_directory['page_type'] == 'search' ) {
 			if ( $blogs_directory['page'] > 1 ) {
-				$title = '<a href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/">' . $post->post_title . '</a> &raquo; <a href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/search/">' . __('Search') . '</a> &raquo; ' . '<a href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/search/' . urlencode($blogs_directory['phrase']) .  '/' . $blogs_directory['page'] . '/">' . $blogs_directory['page'] . '</a>';
+				$title = '<a href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/">' . $post->post_title . '</a> &raquo; <a href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/search/">' . __('Search','blogs-directory') . '</a> &raquo; ' . '<a href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/search/' . urlencode($blogs_directory['phrase']) .  '/' . $blogs_directory['page'] . '/">' . $blogs_directory['page'] . '</a>';
 			} else {
-				$title = '<a href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/">' . $post->post_title . '</a> &raquo; <a href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/search/">' . __('Search') . '</a>';
+				$title = '<a href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/">' . $post->post_title . '</a> &raquo; <a href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/search/">' . __('Search','blogs-directory') . '</a>';
 			}
 		}
 	}
@@ -253,7 +292,7 @@ function blogs_directory_output($content) {
 			$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="">';
 				$content .= '<tr>';
 					$content .= '<td style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="10%"> </td>';
-					$content .= '<td style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="90%"><center><strong>' .  __('Blogs') . '</strong></center></td>';
+					$content .= '<td style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="90%"><center><strong>' .  __('Blogs','blogs-directory') . '</strong></center></td>';
 				$content .= '</tr>';
 				//=================================//
 				$avatar_default = get_option('avatar_default');
@@ -285,6 +324,11 @@ function blogs_directory_output($content) {
 				if ( count($blogs) > 0 ) {
 					//=================================//
 					foreach ($blogs as $blog){
+
+                        //Hide some blogs
+                        if ( blogs_directory_hide_some_blogs( $blog['blog_id'] ) )
+                            continue;
+
 						//=============================//
 						$blog_title = get_blog_option( $blog['blog_id'], 'blogname', $blog['domain'] . $blog['path'] );
 						if ($tic_toc == 'toc'){
@@ -332,19 +376,26 @@ function blogs_directory_output($content) {
             //search by
             if ( !empty( $temp_blogs ) ) {
                 foreach ( $temp_blogs as $blog ) {
+
+                    //Hide some blogs
+                    if ( blogs_directory_hide_some_blogs( $blog['blog_id'] ) )
+                        continue;
+
                     if ( $current_site->id != $blog['blog_id'] ) {
                         $blogname           = get_blog_option( $blog['blog_id'], 'blogname', $blog['domain'] . $blog['path'] );
                         $blogdescription    = get_blog_option( $blog['blog_id'], 'blogdescription', $blog['domain'] . $blog['path'] );
                         $percent            = 0;
 
                         similar_text( strtolower( $blogname ), strtolower( $blogs_directory['phrase'] ), $percent );
+
                         if ( 100 == $percent ) {
                             //if found 100 percent result stop searching
+                            $blogs                      = array();
                             $blog['blogname']           = $blogname;
                             $blog['blogdescription']    = $blogdescription;
                             $blog['percent']            = $percent;
-                            $blogs                      = $blog;
-                            break;
+                            $blogs[]                    = $blog;
+//                            break;
                         } elseif ( 80 <= $percent ) {
                             //add blog in possible results array
                             $blog['blogname']           = $blogname;
@@ -360,10 +411,9 @@ function blogs_directory_output($content) {
                                 $temp_blogdescription = $blogdescription;
 
                                 foreach ( $search_arr as $search_text ) {
-                                    $count = substr_count( strtolower( $blogdescription ), $search_text );
-                                    if ( 0 < $count ) {
+                                    if ( preg_match( "/\b" . $search_text . "\b/i", $temp_blogdescription ) ) {
                                         //set SHORTCODE for highlight search words
-                                        $temp_blogdescription = preg_replace( "/(.*?)(" . $search_text . ")(.*?)/i", "\\1{MYSHORTCODE_OPEN}\\2{MYSHORTCODE_CLOSE}\\3", $temp_blogdescription );
+                                        $temp_blogdescription = preg_replace( "/(.*?)\b(" . $search_text . ")\b(.*?)/i", "\\1{MYSHORTCODE_OPEN}\\2{MYSHORTCODE_CLOSE}\\3", $temp_blogdescription );
                                         //count found words
                                         $find++;
                                     }
@@ -385,7 +435,7 @@ function blogs_directory_output($content) {
                     }
                 }
 
-                //sorb blogs by percent
+                //sort blogs by percent
                 if ( 1 < count( $blogs ) ) {
                     $fn = create_function( '$a, $b', '
                         if( $a["percent"] == $b["percent"] ) return 0;
@@ -415,7 +465,7 @@ function blogs_directory_output($content) {
 			$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="">';
 				$content .= '<tr>';
 					$content .= '<td style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="10%"> </td>';
-					$content .= '<td style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="90%"><center><strong>' .  __('Blogs') . '</strong></center></td>';
+					$content .= '<td style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="90%"><center><strong>' .  __('Blogs','blogs-directory') . '</strong></center></td>';
 				$content .= '</tr>';
 				//=================================//
 				$avatar_default = get_option('avatar_default');
@@ -450,7 +500,7 @@ function blogs_directory_output($content) {
 				} else {
 					$content .= '<tr>';
 						$content .= '<td style="background-color:' . $bg_color . '; padding-top:10px;" valign="top" width="10%"></td>';
-						$content .= '<td style="background-color:' . $bg_color . ';" width="90%">' . __('No results...') . '</td>';
+						$content .= '<td style="background-color:' . $bg_color . ';" width="90%">' . __('No results...','blogs-directory') . '</td>';
 					$content .= '</tr>';
 				}
 				//=================================//
@@ -460,7 +510,7 @@ function blogs_directory_output($content) {
 				$content .= $navigation_content;
 			}
 		} else {
-			$content = __('Invalid page.');
+			$content = __('Invalid page.','blogs-directory');
 		}
 	}
 	return $content;
@@ -479,7 +529,7 @@ function blogs_directory_search_form_output($content, $phrase) {
 				$content .= '<input name="phrase" style="width: 100%;" type="text" value="' . $phrase . '">';
 			$content .= '</td>';
 			$content .= '<td style="font-size:12px; text-align:right;" width="20%">';
-				$content .= '<input name="Submit" value="' . __('Search') . '" type="submit">';
+				$content .= '<input name="Submit" value="' . __('Search','blogs-directory') . '" type="submit">';
 			$content .= '</td>';
 		$content .= '</tr>';
 		$content .= '</table>';
@@ -512,10 +562,10 @@ function blogs_directory_search_navigation_output($content, $per_page, $page, $p
 	if ($blog_count > $per_page){
 	//============================================================================//
 		if ($page == '' || $page == '1'){
-			//$content .= __('Previous');
+			//$content .= __('Previous','blogs-directory');
 		} else {
 		$previous_page = $page - 1;
-		$content .= '<a style="text-decoration:none;" href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/search/' . urlencode( $phrase ) . '/' . $previous_page . '/">&laquo; ' . __('Previous') . '</a>';
+		$content .= '<a style="text-decoration:none;" href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/search/' . urlencode( $phrase ) . '/' . $previous_page . '/">&laquo; ' . __('Previous','blogs-directory') . '</a>';
 		}
 	//============================================================================//
 	}
@@ -525,13 +575,13 @@ function blogs_directory_search_navigation_output($content, $per_page, $page, $p
 	//============================================================================//
 		if ( $next != 'no' ) {
 			if ($page == $total_pages){
-				//$content .= __('Next');
+				//$content .= __('Next','blogs-directory');
 			} else {
 				if ($total_pages == 1){
-					//$content .= __('Next');
+					//$content .= __('Next','blogs-directory');
 				} else {
 					$next_page = $page + 1;
-				$content .= '<a style="text-decoration:none;" href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/search/' . urlencode( $phrase ) . '/' . $next_page . '/">' . __('Next') . ' &raquo;</a>';
+				$content .= '<a style="text-decoration:none;" href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/search/' . urlencode( $phrase ) . '/' . $next_page . '/">' . __('Next','blogs-directory') . ' &raquo;</a>';
 				}
 			}
 		}
@@ -566,10 +616,10 @@ function blogs_directory_landing_navigation_output($content, $per_page, $page){
 	if ($blog_count > $per_page){
 	//============================================================================//
 		if ($page == '' || $page == '1'){
-			//$content .= __('Previous');
+			//$content .= __('Previous','blogs-directory');
 		} else {
 		$previous_page = $page - 1;
-		$content .= '<a style="text-decoration:none;" href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/' . $previous_page . '/">&laquo; ' . __('Previous') . '</a>';
+		$content .= '<a style="text-decoration:none;" href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/' . $previous_page . '/">&laquo; ' . __('Previous','blogs-directory') . '</a>';
 		}
 	//============================================================================//
 	}
@@ -578,13 +628,13 @@ function blogs_directory_landing_navigation_output($content, $per_page, $page){
 	if ($blog_count > $per_page){
 	//============================================================================//
 		if ($page == $total_pages){
-			//$content .= __('Next');
+			//$content .= __('Next','blogs-directory');
 		} else {
 			if ($total_pages == 1){
-				//$content .= __('Next');
+				//$content .= __('Next','blogs-directory');
 			} else {
 				$next_page = $page + 1;
-			$content .= '<a style="text-decoration:none;" href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/' . $next_page . '/">' . __('Next') . ' &raquo;</a>';
+			$content .= '<a style="text-decoration:none;" href="http://' . $current_site->domain . $current_site->path . $blogs_directory_base . '/' . $next_page . '/">' . __('Next','blogs-directory') . ' &raquo;</a>';
 			}
 		}
 	//============================================================================//
