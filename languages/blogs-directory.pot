@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WordPress VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-19 18:59+0200\n"
-"PO-Revision-Date: 2011-11-19 18:59+0200\n"
+"POT-Creation-Date: 2011-11-22 19:43+0200\n"
+"PO-Revision-Date: 2011-11-22 19:43+0200\n"
 "Last-Translator: Andrey Shipilov\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -18,99 +18,102 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: c:\\blogs-directory\n"
 
-#: c:\blogs-directory/blogs-directory.php:95
-#: c:\blogs-directory/blogs-directory.php:296
-#: c:\blogs-directory/blogs-directory.php:470
+#: c:\blogs-directory/blogs-directory.php:94
 msgid "Blogs"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:109
+#: c:\blogs-directory/blogs-directory.php:110
 msgid "Blogs Directory"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:112
+#: c:\blogs-directory/blogs-directory.php:113
 msgid "Sort By"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:115
+#: c:\blogs-directory/blogs-directory.php:116
 msgid "Blog Name (A-Z)"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:116
+#: c:\blogs-directory/blogs-directory.php:117
 msgid "Newest"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:117
+#: c:\blogs-directory/blogs-directory.php:118
 msgid "Last Updated"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:122
+#: c:\blogs-directory/blogs-directory.php:123
 msgid "Listing Per Page"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:139
+#: c:\blogs-directory/blogs-directory.php:140
 msgid "Hide Blogs"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:142
+#: c:\blogs-directory/blogs-directory.php:143
 msgid "Pro Site plugin"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:143
+#: c:\blogs-directory/blogs-directory.php:144
 msgid "(Hide unpaid blogs.)"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:146
+#: c:\blogs-directory/blogs-directory.php:147
 msgid "Private"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:147
+#: c:\blogs-directory/blogs-directory.php:148
 msgid "(Hide blogs which block search engines.)"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:151
-msgid "Background Color"
+#: c:\blogs-directory/blogs-directory.php:152
+msgid "Title of Blogs page"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:153
-#: c:\blogs-directory/blogs-directory.php:158
-#: c:\blogs-directory/blogs-directory.php:163
+#: c:\blogs-directory/blogs-directory.php:154
+#: c:\blogs-directory/blogs-directory.php:159
+#: c:\blogs-directory/blogs-directory.php:164
+#: c:\blogs-directory/blogs-directory.php:169
 msgid "Default"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:156
+#: c:\blogs-directory/blogs-directory.php:157
+msgid "Background Color"
+msgstr ""
+
+#: c:\blogs-directory/blogs-directory.php:162
 msgid "Alternate Background Color"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:161
+#: c:\blogs-directory/blogs-directory.php:167
 msgid "Border Color"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:267
-#: c:\blogs-directory/blogs-directory.php:269
-#: c:\blogs-directory/blogs-directory.php:534
+#: c:\blogs-directory/blogs-directory.php:289
+#: c:\blogs-directory/blogs-directory.php:291
+#: c:\blogs-directory/blogs-directory.php:563
 msgid "Search"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:505
+#: c:\blogs-directory/blogs-directory.php:534
 msgid "No results..."
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:515
+#: c:\blogs-directory/blogs-directory.php:544
 msgid "Invalid page."
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:570
-#: c:\blogs-directory/blogs-directory.php:624
+#: c:\blogs-directory/blogs-directory.php:599
+#: c:\blogs-directory/blogs-directory.php:653
 msgid "Previous"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:586
-#: c:\blogs-directory/blogs-directory.php:639
+#: c:\blogs-directory/blogs-directory.php:615
+#: c:\blogs-directory/blogs-directory.php:668
 msgid "Next"
 msgstr ""
 
-#: c:\blogs-directory/blogs-directory.php:666
+#: c:\blogs-directory/blogs-directory.php:695
 msgid "Please install the latest version of <a href=\"http://premium.wpmudev.org/project/update-notifications/\" title=\"Download Now &raquo;\">our free Update Notifications plugin</a> which helps you stay up-to-date with the most stable, secure versions of WPMU DEV themes and plugins. <a href=\"http://premium.wpmudev.org/wpmu-dev/update-notifications-plugin-information/\">More information &raquo;</a>"
 msgstr ""
 

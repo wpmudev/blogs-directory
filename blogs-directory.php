@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
 Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.1.5
+Version: 1.1.6
 Network: true
 WDP ID: 101
 */
@@ -103,8 +103,10 @@ function blogs_directory_site_admin_options() {
 	$blogs_directory_background_color           = get_site_option('blogs_directory_background_color', '#F2F2EA');
 	$blogs_directory_alternate_background_color = get_site_option('blogs_directory_alternate_background_color', '#FFFFFF');
     $blogs_directory_border_color               = get_site_option('blogs_directory_border_color', '#CFD0CB');
-	$blogs_directory_hide_blogs                 = get_site_option('blogs_directory_hide_blogs');
+    $blogs_directory_hide_blogs                 = get_site_option('blogs_directory_hide_blogs');
+	$blogs_directory_title_blogs_page           = get_site_option('blogs_directory_title_blogs_page');
 	?>
+
 		<h3><?php _e('Blogs Directory','blogs-directory') ?></h3>
 		<table class="form-table">
             <tr valign="top">
@@ -147,19 +149,24 @@ function blogs_directory_site_admin_options() {
                 </td>
             </tr>
             <tr valign="top">
+                <th width="33%" scope="row"><?php _e('Title of Blogs page','blogs-directory') ?></th>
+                <td><input name="blogs_directory_title_blogs_page" type="text" id="blogs_directory_title_blogs_page" value="<?php echo ( isset( $blogs_directory_title_blogs_page ) && '' != $blogs_directory_title_blogs_page ) ? $blogs_directory_title_blogs_page : 'Blogs' ;; ?>" size="20" />
+                <br /><span class="description"><?php _e('Default','blogs-directory') ?>: "Blogs"</span></td>
+            </tr>
+            <tr valign="top">
                 <th width="33%" scope="row"><?php _e('Background Color','blogs-directory') ?></th>
                 <td><input name="blogs_directory_background_color" type="text" id="blogs_directory_background_color" value="<?php echo $blogs_directory_background_color; ?>" size="20" />
-                <br /><?php _e('Default','blogs-directory') ?>: #F2F2EA</td>
+                <br /><span class="description"><?php _e('Default','blogs-directory') ?>: #F2F2EA</span></td>
             </tr>
             <tr valign="top">
                 <th width="33%" scope="row"><?php _e('Alternate Background Color','blogs-directory') ?></th>
                 <td><input name="blogs_directory_alternate_background_color" type="text" id="blogs_directory_alternate_background_color" value="<?php echo $blogs_directory_alternate_background_color; ?>" size="20" />
-                <br /><?php _e('Default','blogs-directory') ?>: #FFFFFF</td>
+                <br /><span class="description"><?php _e('Default','blogs-directory') ?>: #FFFFFF</span></td>
             </tr>
             <tr valign="top">
                 <th width="33%" scope="row"><?php _e('Border Color','blogs-directory') ?></th>
                 <td><input name="blogs_directory_border_color" type="text" id="blogs_directory_border_color" value="<?php echo $blogs_directory_border_color; ?>" size="20" />
-                <br /><?php _e('Default','blogs-directory') ?>: #CFD0CB</td>
+                <br /><span class="description"><?php _e('Default','blogs-directory') ?>: #CFD0CB</span></td>
             </tr>
 		</table>
 	<?php
@@ -171,7 +178,23 @@ function blogs_directory_site_admin_options_process() {
 	update_site_option( 'blogs_directory_background_color' , trim( $_POST['blogs_directory_background_color'] ));
 	update_site_option( 'blogs_directory_alternate_background_color' , trim( $_POST['blogs_directory_alternate_background_color'] ));
     update_site_option( 'blogs_directory_border_color' , trim( $_POST['blogs_directory_border_color'] ));
-	update_site_option( 'blogs_directory_hide_blogs' , $_POST['blogs_directory_hide_blogs'] );
+    update_site_option( 'blogs_directory_hide_blogs' , $_POST['blogs_directory_hide_blogs'] );
+
+    //set blogs page title
+    if ( isset( $_POST['blogs_directory_title_blogs_page'] ) && '' != $_POST['blogs_directory_title_blogs_page'] )
+        $blogs_directory_title_blogs_page =  trim( $_POST['blogs_directory_title_blogs_page'] );
+	else
+        $blogs_directory_title_blogs_page = 'Blogs' ;
+
+    update_site_option( 'blogs_directory_title_blogs_page' , $blogs_directory_title_blogs_page );
+
+    global $wpdb, $blogs_directory_base;
+    $page_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->posts . " WHERE post_name = '" . $blogs_directory_base . "' AND post_type = 'page'");
+
+    if ( 1 == $page_count ) {
+        $wpdb->query( "UPDATE " . $wpdb->posts . " SET post_title = '" . $blogs_directory_title_blogs_page . "' WHERE post_name = '" . $blogs_directory_base . "' AND post_type = 'page'" );
+    }
+
 }
 
 function blogs_directory_rewrite($wp_rewrite){
@@ -276,12 +299,14 @@ function blogs_directory_output($content) {
 	global $wpdb, $current_site, $post, $blogs_directory_base;
 	$bg_color = '';
 	if ( $post->post_name == $blogs_directory_base ) {
-		$blogs_directory_sort_by = get_site_option('blogs_directory_sort_by', 'alphabetically');
-		$blogs_directory_per_page = get_site_option('blogs_directory_per_page', '10');
-		$blogs_directory_background_color = get_site_option('blogs_directory_background_color', '#F2F2EA');
+		$blogs_directory_sort_by                    = get_site_option('blogs_directory_sort_by', 'alphabetically');
+		$blogs_directory_per_page                   = get_site_option('blogs_directory_per_page', '10');
+		$blogs_directory_background_color           = get_site_option('blogs_directory_background_color', '#F2F2EA');
 		$blogs_directory_alternate_background_color = get_site_option('blogs_directory_alternate_background_color', '#FFFFFF');
-		$blogs_directory_border_color = get_site_option('blogs_directory_border_color', '#CFD0CB');
-		$blogs_directory = blogs_directory_url_parse();
+		$blogs_directory_border_color               = get_site_option('blogs_directory_border_color', '#CFD0CB');
+		$blogs_directory                            = blogs_directory_url_parse();
+        $blogs_directory_title_blogs_page           = get_site_option('blogs_directory_title_blogs_page');
+
 		if ( $blogs_directory['page_type'] == 'landing' ) {
 			$search_form_content = blogs_directory_search_form_output('', $blogs_directory['phrase']);
 			$navigation_content = blogs_directory_landing_navigation_output('', $blogs_directory_per_page, $blogs_directory['page']);
@@ -289,10 +314,10 @@ function blogs_directory_output($content) {
 			$content .= '<br />';
 			$content .= $navigation_content;
 			$content .= '<div style="float:left; width:100%">';
-			$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="">';
+			$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="" class="blogs_directory_table">';
 				$content .= '<tr>';
-					$content .= '<td style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="10%"> </td>';
-					$content .= '<td style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="90%"><center><strong>' .  __('Blogs','blogs-directory') . '</strong></center></td>';
+					$content .= '<th style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="10%"> </th>';
+					$content .= '<th style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="90%"><center><strong>' .  $blogs_directory_title_blogs_page . '</strong></center></th>';
 				$content .= '</tr>';
 				//=================================//
 				$avatar_default = get_option('avatar_default');
@@ -330,7 +355,9 @@ function blogs_directory_output($content) {
                             continue;
 
 						//=============================//
-						$blog_title = get_blog_option( $blog['blog_id'], 'blogname', $blog['domain'] . $blog['path'] );
+						$blog_title         = get_blog_option( $blog['blog_id'], 'blogname', $blog['domain'] . $blog['path'] );
+                        $blogdescription    = get_blog_option( $blog['blog_id'], 'blogdescription', $blog['domain'] . $blog['path'] );
+
 						if ($tic_toc == 'toc'){
 							$tic_toc = 'tic';
 						} else {
@@ -350,6 +377,7 @@ function blogs_directory_output($content) {
 							}
 							$content .= '<td style="background-color:' . $bg_color . ';" width="90%">';
 							$content .= '<a style="text-decoration:none; font-size:1.5em; margin-left:20px;" href="http://' . $blog['domain'] . $blog['path'] . '">' . $blog_title . '</a><br />';
+                            $content .= '<span class="blogs_dir_search_blog_description" style="font-size: 12px; color: #9D88B0" >' . $blogdescription . '</span>';
 							$content .= '</td>';
 						$content .= '</tr>';
 					}
@@ -386,28 +414,28 @@ function blogs_directory_output($content) {
                         $blogdescription    = get_blog_option( $blog['blog_id'], 'blogdescription', $blog['domain'] . $blog['path'] );
                         $percent            = 0;
 
-                        similar_text( strtolower( $blogname ), strtolower( $blogs_directory['phrase'] ), $percent );
+                        $search_arr = explode( ' ', strtolower( trim( preg_replace( "/  +/", " ", preg_replace( "/[^\w\d\s]/", "", $blogs_directory['phrase'] ) ) ) ) );
 
-                        if ( 100 == $percent ) {
-                            //if found 100 percent result stop searching
-                            $blogs                      = array();
+                       //search in title
+                        $found_word = 0;
+                        foreach ( $search_arr as $search_text ) {
+                            if ( preg_match( "/\b" . $search_text . "\b/i", $blogname ) ) {
+                                //count found words
+                                $found_word++;
+                            }
+                        }
+
+                        if ( 0 < $found_word ) {
                             $blog['blogname']           = $blogname;
                             $blog['blogdescription']    = $blogdescription;
-                            $blog['percent']            = $percent;
-                            $blogs[]                    = $blog;
-//                            break;
-                        } elseif ( 80 <= $percent ) {
-                            //add blog in possible results array
-                            $blog['blogname']           = $blogname;
-                            $blog['blogdescription']    = $blogdescription;
-                            $blog['percent']            = $percent;
+                            $blog['percent']            = $found_word + 100;
                             $blogs[]                    = $blog;
                         } else {
                             //if anything in blogname try search in blogdescription
                             $search_arr = explode( ' ', strtolower( trim( preg_replace( "/  +/", " ", preg_replace( "/[^\w\d\s]/", "", $blogs_directory['phrase'] ) ) ) ) );
 
                             if ( is_array( $search_arr ) ) {
-                                $find = 0;
+                                $found_word = 0;
                                 $temp_blogdescription = $blogdescription;
 
                                 foreach ( $search_arr as $search_text ) {
@@ -415,18 +443,18 @@ function blogs_directory_output($content) {
                                         //set SHORTCODE for highlight search words
                                         $temp_blogdescription = preg_replace( "/(.*?)\b(" . $search_text . ")\b(.*?)/i", "\\1{MYSHORTCODE_OPEN}\\2{MYSHORTCODE_CLOSE}\\3", $temp_blogdescription );
                                         //count found words
-                                        $find++;
+                                        $found_word++;
                                     }
                                 }
 
-                                if ( 0 < $find ) {
+                                if ( 0 < $found_word ) {
                                     //replace SHORTCODE for highlight search words
                                     $temp_blogdescription = str_replace( '{MYSHORTCODE_OPEN}', '<span style="background-color: yellow;">', $temp_blogdescription );
                                     $temp_blogdescription = str_replace( '{MYSHORTCODE_CLOSE}', '</span>', $temp_blogdescription );
 
                                     $blog['blogname']           = $blogname;
                                     $blog['blogdescription']    = $temp_blogdescription;
-                                    $blog['percent']            = $find;
+                                    $blog['percent']            = $found_word;
                                     $blogs[]                    = $blog;
                                 }
                             }
@@ -462,10 +490,10 @@ function blogs_directory_output($content) {
 				$content .= $navigation_content;
 			}
 			$content .= '<div style="float:left; width:100%">';
-			$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="">';
+			$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="" class="blogs_directory_search_table">';
 				$content .= '<tr>';
-					$content .= '<td style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="10%"> </td>';
-					$content .= '<td style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="90%"><center><strong>' .  __('Blogs','blogs-directory') . '</strong></center></td>';
+					$content .= '<th style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="10%"> </td>';
+					$content .= '<th style="background-color:' . $blogs_directory_background_color . '; border-bottom-style:solid; border-bottom-color:' . $blogs_directory_border_color . '; border-bottom-width:1px; font-size:12px;" width="90%"><center><strong>' .  $blogs_directory_title_blogs_page . '</strong></center></td>';
 				$content .= '</tr>';
 				//=================================//
 				$avatar_default = get_option('avatar_default');
@@ -523,7 +551,7 @@ function blogs_directory_search_form_output($content, $phrase) {
 	} else {
 		$content .= '<form action="' . $current_site->path . $blogs_directory_base . '/search/" method="post">';
 	}
-		$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="">';
+		$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor=""  class="blogs_directory_search_table">';
 		$content .= '<tr>';
 		    $content .= '<td style="font-size:12px; text-align:left;" width="80%">';
 				$content .= '<input name="phrase" style="width: 100%;" type="text" value="' . $phrase . '">';
@@ -549,7 +577,7 @@ function blogs_directory_search_navigation_output($content, $per_page, $page, $p
 	//generate page div
 	//============================================================================//
 	$total_pages = blogs_directory_roundup($blog_count / $per_page, 0);
-	$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="">';
+	$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="" class="blogs_directory_nav_table">';
 	$content .= '<tr>';
 	$showing_low = ($page * $per_page) - ($per_page - 1);
 	if ($total_pages == $page){
@@ -601,7 +629,7 @@ function blogs_directory_landing_navigation_output($content, $per_page, $page){
 	//generate page div
 	//============================================================================//
 	$total_pages = blogs_directory_roundup($blog_count / $per_page, 0);
-	$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="">';
+	$content .= '<table border="0" border="0" cellpadding="2px" cellspacing="2px" width="100%" bgcolor="" class="blogs_directory_nav_table">';
 	$content .= '<tr>';
 	$showing_low = ($page * $per_page) - ($per_page - 1);
 	if ($total_pages == $page){
