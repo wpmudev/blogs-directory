@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
 Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.1.7
+Version: 1.1.8
 Network: true
 WDP ID: 101
 */
@@ -58,8 +58,8 @@ add_action('admin_init', 'blogs_directory_save_options');
 
 //Network admin menu
 function blogs_directory_admin_page() {
-        add_menu_page( __( 'Blog Directory', 'blogs-directory' ), __( 'Blog Directory', 'blogs-directory' ), 'manage_network_options', 'blog-directory-settings', 'blogs_directory_site_admin_options' );
-//        $page = add_submenu_page( 'blog-directory', __( 'Settings', 'blogs-directory' ), __( 'Settings', 'blogs-directory' ), 'manage_network_options', 'blog-directory-settings', 'blogs_directory_site_admin_options' );
+        add_submenu_page( 'settings.php',  __( 'Blog Directory', 'blogs-directory' ), __( 'Blog Directory', 'blogs-directory' ), 'manage_network_options', 'blog-directory-settings', 'blogs_directory_site_admin_options' );
+        // $page = add_submenu_page( 'blog-directory', __( 'Settings', 'blogs-directory' ), __( 'Settings', 'blogs-directory' ), 'manage_network_options', 'blog-directory-settings', 'blogs_directory_site_admin_options' );
 }
 
 
@@ -79,7 +79,7 @@ function blogs_directory_hide_some_blogs( $blog_id ) {
     if ( isset( $blogs_directory_hide_blogs['private'] ) && 1 == $blogs_directory_hide_blogs['private'] ) {
         //don't show private blogs
         $privacy = get_blog_option( $blog_id, 'blog_public' );
-        if ( is_numeric( $privacy ) && 0 == $privacy )
+        if ( is_numeric( $privacy ) && 1 != $privacy )
             return true;
     }
 
@@ -348,9 +348,10 @@ function blogs_directory_output($content) {
 		$blogs_directory_alternate_background_color = get_site_option('blogs_directory_alternate_background_color', '#FFFFFF');
 		$blogs_directory_border_color               = get_site_option('blogs_directory_border_color', '#CFD0CB');
 		$blogs_directory                            = blogs_directory_url_parse();
-        $blogs_directory_title_blogs_page           = get_site_option('blogs_directory_title_blogs_page');
-        $blogs_directory_show_description           = get_site_option('blogs_directory_show_description');
-
+		$blogs_directory_title_blogs_page           = get_site_option('blogs_directory_title_blogs_page');
+		$blogs_directory_show_description           = get_site_option('blogs_directory_show_description');
+		$blogs_directory_hide_blogs 		    = get_site_option( 'blogs_directory_hide_blogs');
+		
 		if ( $blogs_directory['page_type'] == 'landing' ) {
 			$search_form_content = blogs_directory_search_form_output('', $blogs_directory['phrase']);
 			$navigation_content = blogs_directory_landing_navigation_output('', $blogs_directory_per_page, $blogs_directory['page']);
@@ -375,7 +376,10 @@ function blogs_directory_output($content) {
 					$start = $math;
 				}
 
-				$query = "SELECT * FROM " . $wpdb->base_prefix . "blogs WHERE spam != 1 AND deleted != 1 AND blog_id != 1";
+				$query = "SELECT * FROM " . $wpdb->base_prefix . "blogs WHERE spam = 0 AND deleted = 0 AND blog_id != 1";
+				if ( isset( $blogs_directory_hide_blogs['private'] ) && 1 == $blogs_directory_hide_blogs['private'] ) {
+					$query .= " AND public = 1";
+				}
 				if ( $blogs_directory_sort_by == 'alphabetically' ) {
 					if ( is_subdomain_install() ) {
 						$query .= " ORDER BY domain ASC";

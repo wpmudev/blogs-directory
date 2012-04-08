@@ -3,6 +3,9 @@ Authors: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub)
 
 == Changelog ==
 
+= 1.1.8 =
+* Blog Directory - Multi Site Privacy compatibility
+
 = 1.1.7 =
 * Moved setting as new network admin menu;
 * "Display Description" as optional feature (look settings);
