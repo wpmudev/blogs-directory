@@ -376,7 +376,7 @@ function blogs_directory_output($content) {
 					$start = $math;
 				}
 
-				$query = "SELECT * FROM " . $wpdb->base_prefix . "blogs WHERE spam = 0 AND deleted = 0 AND blog_id != 1";
+				$query = "SELECT * FROM " . $wpdb->base_prefix . "blogs WHERE spam = 0 AND deleted = 0 AND archived = '0' AND blog_id != 1";
 				if ( isset( $blogs_directory_hide_blogs['private'] ) && 1 == $blogs_directory_hide_blogs['private'] ) {
 					$query .= " AND public = 1";
 				}
