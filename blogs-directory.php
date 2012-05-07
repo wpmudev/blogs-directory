@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
 Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub), S H Mohanjith (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.1.8
+Version: 1.1.9
 Network: true
 WDP ID: 101
 */
@@ -453,7 +453,9 @@ function blogs_directory_output($content) {
             //get all blogs
             $query      = "SELECT * FROM " . $wpdb->base_prefix . "blogs";
             $temp_blogs = $wpdb->get_results( $query, ARRAY_A );
-
+	    
+	    $blogs = array();
+	    
             //search by
             if ( !empty( $temp_blogs ) ) {
                 foreach ( $temp_blogs as $blog ) {
@@ -461,59 +463,38 @@ function blogs_directory_output($content) {
                     //Hide some blogs
                     if ( blogs_directory_hide_some_blogs( $blog['blog_id'] ) )
                         continue;
-
+		
                     if ( $current_site->id != $blog['blog_id'] ) {
+			$search_arr = explode( ' ', $blogs_directory['phrase'] );
+			
+			$query      = "SELECT option_name FROM {$wpdb->base_prefix}{$blog['blog_id']}_options WHERE option_name IN ('blogname', 'blogdescription') AND option_value LIKE '%".join("%' AND option_value LIKE '%", $search_arr)."%'; ";
+			$found_words = $wpdb->get_results( $query, ARRAY_A );
+			
+			if (count($found_words) == 0)
+				continue;
+			
+                        $found_word_name = 0;
+			$found_word_description = 0;
+			
+			foreach ($found_words as $found_word) {
+				if ($found_word['option_name'] == 'blogname') {
+					$found_word_name++;
+				} else if ($found_word['option_name'] == 'blogdescription') {
+					$found_word_description++;
+				}
+			}
+			
                         $blogname           = get_blog_option( $blog['blog_id'], 'blogname', $blog['domain'] . $blog['path'] );
                         $blogdescription    = get_blog_option( $blog['blog_id'], 'blogdescription', $blog['domain'] . $blog['path'] );
-                        $percent            = 0;
-
-                        $search_arr = explode( ' ', strtolower( trim( preg_replace( "/  +/", " ", preg_replace( "/[^\w\d\s]/", "", $blogs_directory['phrase'] ) ) ) ) );
-
-                       //search in title
-                        $found_word = 0;
-                        foreach ( $search_arr as $search_text ) {
-                            if ( preg_match( "/\b" . $search_text . "\b/i", $blogname ) ) {
-                                //count found words
-                                $found_word++;
-                            }
-                        }
-
-                        if ( 0 < $found_word ) {
+                        $percent            = $found_word_name + $found_word_description;
+			
+                        if ( 0 < $percent ) {
                             $blog['blogname']           = $blogname;
                             $blog['blogdescription']    = $blogdescription;
-                            $blog['percent']            = $found_word + 100;
+                            $blog['percent']            = $percent;
                             $blogs[]                    = $blog;
-                        } else {
-                            //if anything in blogname try search in blogdescription
-                            $search_arr = explode( ' ', strtolower( trim( preg_replace( "/  +/", " ", preg_replace( "/[^\w\d\s]/", "", $blogs_directory['phrase'] ) ) ) ) );
-
-                            if ( is_array( $search_arr ) ) {
-                                $found_word = 0;
-                                $temp_blogdescription = $blogdescription;
-
-                                foreach ( $search_arr as $search_text ) {
-                                    if ( preg_match( "/\b" . $search_text . "\b/i", $temp_blogdescription ) ) {
-                                        //set SHORTCODE for highlight search words
-                                        $temp_blogdescription = preg_replace( "/(.*?)\b(" . $search_text . ")\b(.*?)/i", "\\1{MYSHORTCODE_OPEN}\\2{MYSHORTCODE_CLOSE}\\3", $temp_blogdescription );
-                                        //count found words
-                                        $found_word++;
-                                    }
-                                }
-
-                                if ( 0 < $found_word ) {
-                                    //replace SHORTCODE for highlight search words
-                                    $temp_blogdescription = str_replace( '{MYSHORTCODE_OPEN}', '<span style="background-color: yellow;">', $temp_blogdescription );
-                                    $temp_blogdescription = str_replace( '{MYSHORTCODE_CLOSE}', '</span>', $temp_blogdescription );
-
-                                    $blog['blogname']           = $blogname;
-                                    $blog['blogdescription']    = $temp_blogdescription;
-                                    $blog['percent']            = $found_word;
-                                    $blogs[]                    = $blog;
-                                }
-                            }
-
                         }
-                    }
+		    }
                 }
 
                 //sort blogs by percent
@@ -522,7 +503,7 @@ function blogs_directory_output($content) {
                         if( $a["percent"] == $b["percent"] ) return 0;
                         return ( $a["percent"] > $b["percent"] ) ? -1 : 1;
                     ');
-
+		    
                     usort( $blogs, $fn );
                 }
             }
