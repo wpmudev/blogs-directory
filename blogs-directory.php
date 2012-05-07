@@ -104,7 +104,7 @@ function blogs_directory_page_setup() {
 	if ( get_site_option('blogs_directory_page_setup') != 'complete'.$blogs_directory_base && is_super_admin() ) {
 		$page_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->posts . " WHERE post_name = '" . $blogs_directory_base . "' AND post_type = 'page'");
 		if ( $page_count < 1 ) {
-			$wpdb->query( "INSERT INTO " . $wpdb->posts . " ( post_author, post_date, post_date_gmt, post_content, post_title, post_excerpt, post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, menu_order, post_type, post_mime_type, comment_count ) VALUES ( '" . $user_ID . "', '" . current_time( 'mysql' ) . "', '" . current_time( 'mysql' ) . "', '', '" . __('Blogs') . "', '', 'publish', 'closed', 'closed', '', '" . $blogs_directory_base . "', '', '', '" . current_time( 'mysql' ) . "', '" . current_time( 'mysql' ) . "', '', 0, '', 0, 'page', '', 0 )" );
+			$wpdb->query( "INSERT INTO " . $wpdb->posts . " ( post_author, post_date, post_date_gmt, post_content, post_title, post_excerpt, post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, menu_order, post_type, post_mime_type, comment_count ) VALUES ( '" . $user_ID . "', '" . current_time( 'mysql' ) . "', '" . current_time( 'mysql' ) . "', '', '" . __('Sites') . "', '', 'publish', 'closed', 'closed', '', '" . $blogs_directory_base . "', '', '', '" . current_time( 'mysql' ) . "', '" . current_time( 'mysql' ) . "', '', 0, '', 0, 'page', '', 0 )" );
 		}
 		update_site_option('blogs_directory_page_setup', 'complete'.$blogs_directory_base);
 	}
@@ -160,7 +160,7 @@ function blogs_directory_site_admin_options() {
                     <br /></td>
                 </tr>
                 <tr valign="top">
-                    <th width="33%" scope="row"><?php _e('Hide Blogs','blogs-directory') ?></th>
+                    <th width="33%" scope="row"><?php _e('Hide Sites','blogs-directory') ?></th>
                     <td>
                         <input name="blogs_directory_hide_blogs[pro_site]" id="blogs_directory_hide_blogs[pro_site]" type="checkbox" value="1" <?php echo ( isset( $blogs_directory_hide_blogs['pro_site'] ) && '1' == $blogs_directory_hide_blogs['pro_site'] ) ? 'checked' : '' ; ?>  />
                         <label for="blogs_directory_hide_blogs[pro_site]"><?php _e('Pro Site plugin','blogs-directory') ?></label><br />
@@ -172,17 +172,17 @@ function blogs_directory_site_admin_options() {
                     </td>
                 </tr>
                 <tr valign="top">
-                    <th width="33%" scope="row"><?php _e('Title of Blogs page','blogs-directory') ?></th>
+                    <th width="33%" scope="row"><?php _e('Title of Site page','blogs-directory') ?></th>
                     <td>
-                        <input name="blogs_directory_title_blogs_page" type="text" id="blogs_directory_title_blogs_page" value="<?php echo ( isset( $blogs_directory_title_blogs_page ) && '' != $blogs_directory_title_blogs_page ) ? $blogs_directory_title_blogs_page : 'Blogs' ;; ?>" size="20" />
-                        <br /><span class="description"><?php _e('Default','blogs-directory') ?>: "Blogs"</span>
+                        <input name="blogs_directory_title_blogs_page" type="text" id="blogs_directory_title_blogs_page" value="<?php echo ( isset( $blogs_directory_title_blogs_page ) && '' != $blogs_directory_title_blogs_page ) ? $blogs_directory_title_blogs_page : 'Sites'; ?>" size="20" />
+                        <br /><span class="description"><?php _e('Default','blogs-directory') ?>: "Sites"</span>
                     </td>
                 </tr>
                 <tr valign="top">
                     <th width="33%" scope="row"><?php _e('Display Description','blogs-directory') ?></th>
                     <td>
                         <input name="blogs_directory_show_description" id="blogs_directory_show_description" type="checkbox" value="1" <?php echo ( isset( $blogs_directory_show_description ) && '1' == $blogs_directory_show_description ) ? 'checked' : '' ; ?>  />
-                        <label for="blogs_directory_show_description"><?php _e('Show the description for each blog on Blogs page','blogs-directory') ?></label><br />
+                        <label for="blogs_directory_show_description"><?php _e('Show the description for each site on Sites page','blogs-directory') ?></label><br />
                     </td>
                 </tr>
                 <tr valign="top">
@@ -227,7 +227,7 @@ function blogs_directory_save_options() {
         if ( isset( $_POST['blogs_directory_title_blogs_page'] ) && '' != $_POST['blogs_directory_title_blogs_page'] )
             $blogs_directory_title_blogs_page =  trim( $_POST['blogs_directory_title_blogs_page'] );
 	    else
-            $blogs_directory_title_blogs_page = 'Blogs' ;
+            $blogs_directory_title_blogs_page = 'Sites' ;
 
         update_site_option( 'blogs_directory_title_blogs_page' , $blogs_directory_title_blogs_page );
 
