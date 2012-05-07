@@ -31,7 +31,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
 
-$blogs_directory_base = 'blogs'; //domain.tld/BASE/ Ex: domain.tld/user/
+if (defined('BLOGS_DIRECTORY_SLUG')) {
+	$blogs_directory_base = BLOGS_DIRECTORY_SLUG;
+} else {
+	$blogs_directory_base = 'blogs'; //domain.tld/BASE/ Ex: domain.tld/user/
+}
 
 load_plugin_textdomain( 'blogs-directory', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
@@ -43,7 +47,7 @@ if ( $current_blog->domain . $current_blog->path == $current_site->domain . $cur
 	add_filter('rewrite_rules_array','blogs_directory_rewrite');
 	add_filter('the_content', 'blogs_directory_output', 20);
 	add_filter('the_title', 'blogs_directory_title_output', 99, 2);
-    add_action('admin_footer', 'blogs_directory_page_setup');
+	add_action('admin_footer', 'blogs_directory_page_setup');
 	add_action('init', 'blogs_directory_flush_rewrite_rules');
 }
 
@@ -58,7 +62,7 @@ add_action('admin_init', 'blogs_directory_save_options');
 
 //Network admin menu
 function blogs_directory_admin_page() {
-        add_submenu_page( 'settings.php',  __( 'Blog Directory', 'blogs-directory' ), __( 'Blog Directory', 'blogs-directory' ), 'manage_network_options', 'blog-directory-settings', 'blogs_directory_site_admin_options' );
+        add_submenu_page( 'settings.php',  __( 'Site Directory', 'blogs-directory' ), __( 'Site Directory', 'blogs-directory' ), 'manage_network_options', 'blog-directory-settings', 'blogs_directory_site_admin_options' );
         // $page = add_submenu_page( 'blog-directory', __( 'Settings', 'blogs-directory' ), __( 'Settings', 'blogs-directory' ), 'manage_network_options', 'blog-directory-settings', 'blogs_directory_site_admin_options' );
 }
 
@@ -97,12 +101,12 @@ function blogs_directory_flush_rewrite_rules() {
 
 function blogs_directory_page_setup() {
 	global $wpdb, $user_ID, $blogs_directory_base;
-	if ( get_site_option('blogs_directory_page_setup') != 'complete' && is_super_admin() ) {
+	if ( get_site_option('blogs_directory_page_setup') != 'complete'.$blogs_directory_base && is_super_admin() ) {
 		$page_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->posts . " WHERE post_name = '" . $blogs_directory_base . "' AND post_type = 'page'");
 		if ( $page_count < 1 ) {
 			$wpdb->query( "INSERT INTO " . $wpdb->posts . " ( post_author, post_date, post_date_gmt, post_content, post_title, post_excerpt, post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, menu_order, post_type, post_mime_type, comment_count ) VALUES ( '" . $user_ID . "', '" . current_time( 'mysql' ) . "', '" . current_time( 'mysql' ) . "', '', '" . __('Blogs') . "', '', 'publish', 'closed', 'closed', '', '" . $blogs_directory_base . "', '', '', '" . current_time( 'mysql' ) . "', '" . current_time( 'mysql' ) . "', '', 0, '', 0, 'page', '', 0 )" );
 		}
-		update_site_option('blogs_directory_page_setup', 'complete');
+		update_site_option('blogs_directory_page_setup', 'complete'.$blogs_directory_base);
 	}
 }
 
@@ -125,14 +129,14 @@ function blogs_directory_site_admin_options() {
         ?><div id="message" class="updated fade"><p><?php echo urldecode( $_GET['dmsg'] ); ?></p></div><?php
     endif;
     ?>
-        <h2><?php _e('Blog Directory Settings','blogs-directory') ?></h2>
+        <h2><?php _e('Site Directory Settings','blogs-directory') ?></h2>
         <form method="post" name="" >
 		    <table class="form-table">
                 <tr valign="top">
                     <th width="33%" scope="row"><?php _e('Sort By','blogs-directory') ?></th>
                     <td>
                         <select name="blogs_directory_sort_by" id="blogs_directory_sort_by">
-                           <option value="alphabetically" <?php if ( $blogs_directory_sort_by == 'alphabetically' ) { echo 'selected="selected"'; } ?> ><?php _e('Blog Name (A-Z)','blogs-directory'); ?></option>
+                           <option value="alphabetically" <?php if ( $blogs_directory_sort_by == 'alphabetically' ) { echo 'selected="selected"'; } ?> ><?php _e('Site Name (A-Z)','blogs-directory'); ?></option>
                            <option value="latest" <?php if ( $blogs_directory_sort_by == 'latest' ) { echo 'selected="selected"'; } ?> ><?php _e('Newest','blogs-directory'); ?></option>
                            <option value="last_updated" <?php if ( $blogs_directory_sort_by == 'last_updated' ) { echo 'selected="selected"'; } ?> ><?php _e('Last Updated','blogs-directory'); ?></option>
                         </select>
