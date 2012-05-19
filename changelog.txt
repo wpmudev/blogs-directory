@@ -3,6 +3,9 @@ Authors: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub)
 
 == Changelog ==
 
+= 1.1.9.1 =
+* Blog Directory - Multi Site Privacy compatibility improvements 
+
 = 1.1.9 =
 * Blog search algorithm improvements
 * More bug fixes

@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
 Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub), S H Mohanjith (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.1.9
+Version: 1.1.9.1
 Network: true
 WDP ID: 101
 */
@@ -456,6 +456,20 @@ function blogs_directory_output($content) {
 
             //get all blogs
             $query      = "SELECT * FROM " . $wpdb->base_prefix . "blogs";
+	    if ( isset( $blogs_directory_hide_blogs['private'] ) && 1 == $blogs_directory_hide_blogs['private'] ) {
+		$query .= " WHERE public = 1";
+	    }
+	    if ( $blogs_directory_sort_by == 'alphabetically' ) {
+		if ( is_subdomain_install() ) {
+			$query .= " ORDER BY domain ASC";
+		} else {
+			$query .= " ORDER BY path ASC";
+		}
+	    } else if ( $blogs_directory_sort_by == 'latest' ) {
+		$query .= " ORDER BY blog_id DESC";
+	    } else {
+		$query .= " ORDER BY last_updated DESC";
+	    }
             $temp_blogs = $wpdb->get_results( $query, ARRAY_A );
 	    
 	    $blogs = array();
