@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
 Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub), S H Mohanjith (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.1.9.1
+Version: 1.2.0.0
 Network: true
 WDP ID: 101
 */
@@ -485,7 +485,10 @@ function blogs_directory_output($content) {
                     if ( $current_site->id != $blog['blog_id'] ) {
 			$search_arr = explode( ' ', $blogs_directory['phrase'] );
 			
-			$query      = "SELECT option_name FROM {$wpdb->base_prefix}{$blog['blog_id']}_options WHERE option_name IN ('blogname', 'blogdescription') AND option_value LIKE '%".join("%' AND option_value LIKE '%", $search_arr)."%'; ";
+			$query      = "SELECT option_name FROM {$wpdb->base_prefix}{$blog['blog_id']}_options WHERE option_name IN ('blogname', 'blogdescription')";
+			for ($i=0; $i<count($search_arr); $i++) {
+				$query .= $wpdb->prepare( " AND option_value LIKE '%%%s%%'", $search_arr[$i]);
+			}
 			$found_words = $wpdb->get_results( $query, ARRAY_A );
 			
 			if (count($found_words) == 0)
@@ -620,9 +623,9 @@ function blogs_directory_search_form_output($content, $phrase) {
 function blogs_directory_search_navigation_output($content, $per_page, $page, $phrase, $next){
 	global $wpdb, $current_site, $blogs_directory_base;
 	if ( is_subdomain_install() ) {
-		$blog_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "blogs WHERE ( domain LIKE '%" . $phrase . "%' ) AND spam != 1 AND deleted != 1 AND blog_id != 1");
+		$blog_count = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "blogs WHERE ( domain LIKE '%%%s%%' ) AND spam != 1 AND deleted != 1 AND blog_id != 1", $phrase) );
 	} else {
-		$blog_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "blogs WHERE ( path LIKE '%" . $phrase . "%' ) AND spam != 1 AND deleted != 1 AND blog_id != 1");
+		$blog_count = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "blogs WHERE ( path LIKE '%%%s%%' ) AND spam != 1 AND deleted != 1 AND blog_id != 1", $phrase) );
 	}
 	$blog_count = apply_filters( 'blogs_directory_blogs_count', $blog_count - 1 );
 
@@ -675,7 +678,14 @@ function blogs_directory_search_navigation_output($content, $per_page, $page, $p
 
 function blogs_directory_landing_navigation_output($content, $per_page, $page){
 	global $wpdb, $current_site, $blogs_directory_base;
-	$blog_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "blogs WHERE spam != 1 AND deleted != 1 AND blog_id != 1");
+	
+	$blogs_directory_hide_blogs = get_site_option( 'blogs_directory_hide_blogs');
+	
+	$query = "SELECT COUNT(*) FROM " . $wpdb->base_prefix . "blogs WHERE spam = 0 AND deleted = 0 AND archived = '0' AND blog_id != 1";
+	if ( isset( $blogs_directory_hide_blogs['private'] ) && 1 == $blogs_directory_hide_blogs['private'] ) {
+		$query .= " AND public = 1";
+	}
+	$blog_count = $wpdb->get_var($query);
 	$blog_count = apply_filters( 'blogs_directory_blogs_count', $blog_count );
 
 	//generate page div
