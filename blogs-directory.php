@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
 Author: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub), S H Mohanjith (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.2.0.0
+Version: 1.2.0.1
 Network: true
 WDP ID: 101
 */
@@ -57,8 +57,6 @@ add_action('admin_init', 'blogs_directory_save_options');
 //------------------------------------------------------------------------//
 //---Functions------------------------------------------------------------//
 //------------------------------------------------------------------------//
-
-
 
 //Network admin menu
 function blogs_directory_admin_page() {
@@ -122,15 +120,22 @@ function blogs_directory_site_admin_options() {
 	?>
 
     <div class="wrap">
-
     <?php
     //Display status message
-    if ( isset( $_GET['updated'] ) ):
-        ?><div id="message" class="updated fade"><p><?php echo urldecode( $_GET['dmsg'] ); ?></p></div><?php
-    endif;
+    if ( isset( $_GET['updated'] ) ) {
+		switch ($_GET['dmsg']) {
+				case 'settings-saved':
+						$msg = __( 'Settings saved.', 'blogs-directory' );
+						break;
+				default:
+						$msg = sprintf(__( 'Error: %s', 'blogs-directory' ), base64_encode($_GET['dmsg']));;
+		}
+        ?><div id="message" class="updated fade"><p><?php echo $msg; ?></p></div><?php
+    }
     ?>
         <h2><?php _e('Site Directory Settings','blogs-directory') ?></h2>
         <form method="post" name="" >
+		    <?php wp_nonce_field('save-site-directory', '_wp_nonce', $_SERVER['PHP_SELF']); ?>
 		    <table class="form-table">
                 <tr valign="top">
                     <th width="33%" scope="row"><?php _e('Sort By','blogs-directory') ?></th>
@@ -211,8 +216,7 @@ function blogs_directory_site_admin_options() {
 }
 
 function blogs_directory_save_options() {
-    if ( isset( $_REQUEST['page'] ) && 'blog-directory-settings' == $_REQUEST['page'] && isset( $_POST['save_settings'] ) ) {
-
+    if ( isset( $_REQUEST['page'] ) && 'blog-directory-settings' == $_REQUEST['page'] && isset( $_POST['save_settings'] ) && wp_verify_nonce($_POST['_wp_nonce'], 'save-site-directory') ) {
 	    update_site_option( 'blogs_directory_sort_by' , $_POST['blogs_directory_sort_by']);
 	    update_site_option( 'blogs_directory_per_page' , $_POST['blogs_directory_per_page']);
 	    update_site_option( 'blogs_directory_background_color' , trim( $_POST['blogs_directory_background_color'] ));
@@ -235,10 +239,10 @@ function blogs_directory_save_options() {
         $page_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->posts . " WHERE post_name = '" . $blogs_directory_base . "' AND post_type = 'page'");
 
         if ( 1 == $page_count ) {
-            $wpdb->query( "UPDATE " . $wpdb->posts . " SET post_title = '" . $blogs_directory_title_blogs_page . "' WHERE post_name = '" . $blogs_directory_base . "' AND post_type = 'page'" );
+            $wpdb->query( $wpdb->prepare("UPDATE " . $wpdb->posts . " SET post_title = %s WHERE post_name = %s AND post_type = 'page'", $blogs_directory_title_blogs_page, $blogs_directory_base) );
         }
 
-        wp_redirect( add_query_arg( array( 'page' => 'blog-directory-settings', 'updated' => 'true', 'dmsg' => urlencode( __( 'Settings saved.', 'email-newsletter' ) ) ), 'admin.php' ) );
+        wp_redirect( add_query_arg( array( 'page' => 'blog-directory-settings', 'updated' => 'true', 'dmsg' => 'settings-saved' ), 'admin.php' ) );
         exit;
 
     }
@@ -292,21 +296,23 @@ function blogs_directory_url_parse(){
 		}
 	} else if ( $blogs_directory_1 == 'search' ) {
 		//search
-		$page_type = 'search';
-		$phrase = isset( $_POST['phrase'] ) ? $_POST['phrase'] : '';
-		if ( empty( $phrase ) ) {
-			$phrase = $blogs_directory_2;
-			$page = $blogs_directory_3;
-			if ( empty( $page ) ) {
-				$page = 1;
-			}
-		} else {
-			$page = $blogs_directory_3;
-			if ( empty( $page ) ) {
-				$page = 1;
-			}
+		if (wp_verify_nonce($_POST['_wp_nonce'], 'search-sites')) {
+				$page_type = 'search';
+				$phrase = isset( $_POST['phrase'] ) ? $_POST['phrase'] : '';
+				if ( empty( $phrase ) ) {
+					$phrase = $blogs_directory_2;
+					$page = $blogs_directory_3;
+					if ( empty( $page ) ) {
+						$page = 1;
+					}
+				} else {
+					$page = $blogs_directory_3;
+					if ( empty( $page ) ) {
+						$page = 1;
+					}
+				}
+				$phrase = urldecode( $phrase );
 		}
-		$phrase = urldecode( $phrase );
 	}
 
 	$blogs_directory['page_type'] = $page_type;
@@ -601,6 +607,7 @@ function blogs_directory_output($content) {
 
 function blogs_directory_search_form_output($content, $phrase) {
 	global $wpdb, $current_site, $blogs_directory_base;
+	
 	if ( !empty( $phrase ) ) {
 		$content .= '<form action="' . $current_site->path . $blogs_directory_base . '/search/' . urlencode( $phrase ) . '/" method="post">';
 	} else {
@@ -616,6 +623,7 @@ function blogs_directory_search_form_output($content, $phrase) {
 			$content .= '</td>';
 		$content .= '</tr>';
 		$content .= '</table>';
+		$content .= wp_nonce_field('search-sites','_wp_nonce', $_SERVER['PHP_SELF'], false);
 	$content .= '</form>';
 	return $content;
 }
@@ -756,5 +764,3 @@ function wdp_un_check() {
 add_action( 'admin_notices', 'wdp_un_check', 5 );
 add_action( 'network_admin_notices', 'wdp_un_check', 5 );
 endif;
-
-?>

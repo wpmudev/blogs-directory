@@ -3,6 +3,9 @@ Authors: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub)
 
 == Changelog ==
 
+= 1.2.0.1 =
+* Security improvements
+
 = 1.2.0.0 =
 * SQL query improvements
 
