@@ -3,7 +3,7 @@
 Plugin Name: Blogs Directory
 Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
-Author: WPMU DEV
+Author: WPMUDEV
 Author URI: http://premium.wpmudev.org
 Version: 1.2.0.1
 Network: true
@@ -11,9 +11,7 @@ WDP ID: 101
 */
 
 /*
-Copyright 2009-2014 Incsub (http://incsub.com)
-Author - Paul Menard
-Contributors - Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov, S H Mohanjith
+Copyright 2007-2011 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License (Version 2 - GPLv2) as published by
@@ -363,7 +361,7 @@ function blogs_directory_output($content) {
 		$blogs_directory_title_blogs_page           = get_site_option('blogs_directory_title_blogs_page');
 		$blogs_directory_show_description           = get_site_option('blogs_directory_show_description');
 		$blogs_directory_hide_blogs 		    = get_site_option( 'blogs_directory_hide_blogs');
-		
+
 		if ( $blogs_directory['page_type'] == 'landing' ) {
 			$search_form_content = blogs_directory_search_form_output('', $blogs_directory['phrase']);
 			$navigation_content = blogs_directory_landing_navigation_output('', $blogs_directory_per_page, $blogs_directory['page']);
@@ -465,8 +463,10 @@ function blogs_directory_output($content) {
             //get all blogs
             $query      = "SELECT * FROM " . $wpdb->base_prefix . "blogs";
 	    if ( isset( $blogs_directory_hide_blogs['private'] ) && 1 == $blogs_directory_hide_blogs['private'] ) {
-		$query .= " WHERE public = 1";
+		$query .= " WHERE spam = 0 AND deleted = 0 AND archived = '0' AND public = 1";
 	    }
+        else
+            $query .= " WHERE spam = 0 AND deleted = 0 AND archived = '0'";
 	    if ( $blogs_directory_sort_by == 'alphabetically' ) {
 		if ( is_subdomain_install() ) {
 			$query .= " ORDER BY domain ASC";
@@ -479,9 +479,9 @@ function blogs_directory_output($content) {
 		$query .= " ORDER BY last_updated DESC";
 	    }
             $temp_blogs = $wpdb->get_results( $query, ARRAY_A );
-	    
+
 	    $blogs = array();
-	    
+
             //search by
             if ( !empty( $temp_blogs ) ) {
                 foreach ( $temp_blogs as $blog ) {
@@ -489,22 +489,22 @@ function blogs_directory_output($content) {
                     //Hide some blogs
                     if ( blogs_directory_hide_some_blogs( $blog['blog_id'] ) )
                         continue;
-		
+
                     if ( $current_site->id != $blog['blog_id'] ) {
 			$search_arr = explode( ' ', $blogs_directory['phrase'] );
-			
+
 			$query      = "SELECT option_name FROM {$wpdb->base_prefix}{$blog['blog_id']}_options WHERE option_name IN ('blogname', 'blogdescription')";
 			for ($i=0; $i<count($search_arr); $i++) {
 				$query .= $wpdb->prepare( " AND option_value LIKE '%%%s%%'", $search_arr[$i]);
 			}
 			$found_words = $wpdb->get_results( $query, ARRAY_A );
-			
+
 			if (count($found_words) == 0)
 				continue;
-			
+
                         $found_word_name = 0;
 			$found_word_description = 0;
-			
+
 			foreach ($found_words as $found_word) {
 				if ($found_word['option_name'] == 'blogname') {
 					$found_word_name++;
@@ -512,11 +512,11 @@ function blogs_directory_output($content) {
 					$found_word_description++;
 				}
 			}
-			
+
                         $blogname           = get_blog_option( $blog['blog_id'], 'blogname', $blog['domain'] . $blog['path'] );
                         $blogdescription    = get_blog_option( $blog['blog_id'], 'blogdescription', $blog['domain'] . $blog['path'] );
                         $percent            = $found_word_name + $found_word_description;
-			
+
                         if ( 0 < $percent ) {
                             $blog['blogname']           = $blogname;
                             $blog['blogdescription']    = $blogdescription;
@@ -532,7 +532,7 @@ function blogs_directory_output($content) {
                         if( $a["percent"] == $b["percent"] ) return 0;
                         return ( $a["percent"] > $b["percent"] ) ? -1 : 1;
                     ');
-		    
+
                     usort( $blogs, $fn );
                 }
             }
@@ -609,7 +609,7 @@ function blogs_directory_output($content) {
 
 function blogs_directory_search_form_output($content, $phrase) {
 	global $wpdb, $current_site, $blogs_directory_base;
-	
+
 	if ( !empty( $phrase ) ) {
 		$content .= '<form action="' . $current_site->path . $blogs_directory_base . '/search/' . urlencode( $phrase ) . '/" method="post">';
 	} else {
@@ -688,9 +688,9 @@ function blogs_directory_search_navigation_output($content, $per_page, $page, $p
 
 function blogs_directory_landing_navigation_output($content, $per_page, $page){
 	global $wpdb, $current_site, $blogs_directory_base;
-	
+
 	$blogs_directory_hide_blogs = get_site_option( 'blogs_directory_hide_blogs');
-	
+
 	$query = "SELECT COUNT(*) FROM " . $wpdb->base_prefix . "blogs WHERE spam = 0 AND deleted = 0 AND archived = '0' AND blog_id != 1";
 	if ( isset( $blogs_directory_hide_blogs['private'] ) && 1 == $blogs_directory_hide_blogs['private'] ) {
 		$query .= " AND public = 1";

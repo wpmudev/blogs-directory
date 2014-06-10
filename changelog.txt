@@ -1,5 +1,7 @@
 === Blogs Directory ===
-Authors: Ivan Shaovchev, Ulrich Sossou, Andrew Billits, Andrey Shipilov (Incsub)
+Author: WPMUDEV
+Lead developer: Mariusz Misiek
+Contributors: Ivan Shaovchev, Andrey Shipilov, Andrew Billits, Ulrich Sossou
 
 == Changelog ==
 
