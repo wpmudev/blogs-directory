@@ -5,6 +5,12 @@ Contributors: Ivan Shaovchev, Andrey Shipilov, Andrew Billits, Ulrich Sossou
 
 == Changelog ==
 
+= 1.2.0.3 =
+* Added support for WPMUDEV Domain Mapping
+
+= 1.2.0.2 =
+* Removed pagination from search results
+
 = 1.2.0.1 =
 * Security improvements
 

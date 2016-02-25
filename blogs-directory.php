@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/blogs-directory
 Description: This plugin provides a paginated, fully search-able, avatar inclusive, automatic and rather good looking directory of all of the blogs on your WordPress Multisite or BuddyPress installation.
 Author: WPMUDEV
 Author URI: http://premium.wpmudev.org
-Version: 1.2.0.1
+Version: 1.2.0.3
 Network: true
 WDP ID: 101
 */
@@ -43,7 +43,7 @@ load_plugin_textdomain( 'blogs-directory', false, dirname( plugin_basename( __FI
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
 
-if ( $current_blog->domain . $current_blog->path == $current_site->domain . $current_site->path ){
+if ( isset($current_blog) && ($current_blog->domain . $current_blog->path == $current_site->domain . $current_site->path )) {
 	add_filter('rewrite_rules_array','blogs_directory_rewrite');
 	add_filter('the_content', 'blogs_directory_output', 20);
 	add_filter('the_title', 'blogs_directory_title_output', 99, 2);
@@ -407,6 +407,16 @@ function blogs_directory_output($content) {
 				if ( count($blogs) > 0 ) {
 					//=================================//
 					foreach ($blogs as $blog){
+                        if(defined('DOMAINMAP_TABLE_MAP')) {
+                            $mapped_url_details = $wpdb->get_row($wpdb->prepare( "SELECT * FROM ".DOMAINMAP_TABLE_MAP." WHERE blog_id = %d ORDER BY id ASC LIMIT 1", $blog['blog_id'] ), ARRAY_A);
+
+                            if($mapped_url_details) {
+                                $blog['domain'] = $mapped_url_details['domain'];
+                                $blog['path'] = '/';
+                            }
+                        }
+                        else
+                            $mapped_url_details = false;
 
                         //Hide some blogs
                         if ( blogs_directory_hide_some_blogs( $blog['blog_id'] ) )
@@ -545,6 +555,9 @@ function blogs_directory_output($content) {
 				} else {
 					$next = 'yes';
 				}
+
+                //since it broken because it always displays all, i will disable pagination
+                $next = 'no';
 				$navigation_content = blogs_directory_search_navigation_output('', $blogs_directory_per_page, $blogs_directory['page'], $blogs_directory['phrase'], $next);
 			}
 			$content .= $search_form_content;
