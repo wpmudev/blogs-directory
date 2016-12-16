@@ -5,6 +5,9 @@ Contributors: Ivan Shaovchev, Andrey Shipilov, Andrew Billits, Ulrich Sossou
 
 == Changelog ==
 
+= 1.2.0.4 =
+* Updated WPMU DEV Dashboard
+
 = 1.2.0.3 =
 * Added support for WPMUDEV Domain Mapping
 
